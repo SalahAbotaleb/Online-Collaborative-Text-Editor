@@ -11,7 +11,7 @@ export default function Edit() {
     return (<>
     <NavBar title='Docs'/>
     <div className="bg-[#f1f3f4] flex justify-center p-4 min-h-screen">
-        <div className="w-7/12 text-black h-full bg-white">
+        <div className="w-10/12 lg:w-8/12 text-black bg-white">
             <div id="toolbar" className='flex justify-center '>
                 <button className="ql-bold"/>
                 <button className="ql-italic"/>
