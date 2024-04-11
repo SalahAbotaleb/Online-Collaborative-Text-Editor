@@ -13,12 +13,102 @@ const files = [
         name: 'Document 2',
         owner: 'Jane Doe',
         date: '12/12/2021'
+    },
+    {
+        name: 'Document 3',
+        owner: 'John Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 4',
+        owner: 'Jane Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 5',
+        owner: 'John Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 6',
+        owner: 'Jane Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 7',
+        owner: 'John Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 8',
+        owner: 'Jane Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 9',
+        owner: 'John Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 10',
+        owner: 'Jane Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 11',
+        owner: 'John Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 12',
+        owner: 'Jane Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 13',
+        owner: 'John Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 14',
+        owner: 'Jane Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 15',
+        owner: 'John Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 16',
+        owner: 'Jane Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 17',
+        owner: 'John Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 18',
+        owner: 'Jane Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 19',
+        owner: 'John Doe',
+        date: '12/12/2021'
+    },
+    {
+        name: 'Document 20',
+        owner: 'Jane Doe',
+        date: '12/12/2021'
     }
 ]
 export default function DocumentView() {
     const [selected, setSelected] = useState('owned by anyone')
     return (
-        <div style={{backgroundColor: '#f1f3f4'}} className="flex flex-col justify-top items-center p-4 h-screen">
+        <div style={{backgroundColor: '#f1f3f4'}} className="flex flex-col justify-top items-center p-4 min-h-screen">
             <div className="flex justify-around items-top p-4 w-10/12">
                 <div>
                     <h1 style={{color: '#5f6368', fontFamily: 'Product Sans'}} className="text-2xl font-bold">
