@@ -3,6 +3,8 @@ import {useState} from 'react';
 import docimg from '../assets/doc_image.png';
 import Image from 'next/image';
 import {Transition} from '@headlessui/react';
+import { useRouter } from 'next/navigation'
+
 
 export default function Sign() {
     const [username, setUsername] = useState('');
@@ -10,6 +12,7 @@ export default function Sign() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [email, setEmail] = useState('');
     const [signingIn, setSigningIn] = useState(true);
+    const router = useRouter();
 
 
     return (
@@ -67,6 +70,7 @@ export default function Sign() {
                         </button>
                         <button onClick={(e) => {
                             console.log(username);
+                            router.push('/view');
                         }} className="hover:bg-[#0e4eb5] self-end text-white px-4 py-2 mb-4 mr-4 rounded-3xl shadow-md bg-[#0b57d0]">
                             {signingIn ? 'Sign in' : 'Sign up'}
                         </button>
