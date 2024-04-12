@@ -62,12 +62,12 @@ export default function Sign() {
                             (e) => {
                                 setSigningIn(!signingIn);
                             }
-                        } className="text-blue-600 bg-white mr-6 self-end text-black px-4 py-2 mb-4">
+                        } className="text-blue-600 bg-white mr-6 self-end text-black px-4 py-2 mb-4 rounded-3xl hover:bg-slate-100">
                             {signingIn ? 'Create an account' : 'Already have an account'}
                         </button>
                         <button onClick={(e) => {
                             console.log(username);
-                        }} className="bg-[#0e4eb5] self-end text-white px-4 py-2 mb-4 mr-4 rounded-3xl shadow-md">
+                        }} className="hover:bg-[#0e4eb5] self-end text-white px-4 py-2 mb-4 mr-4 rounded-3xl shadow-md bg-[#0b57d0]">
                             {signingIn ? 'Sign in' : 'Sign up'}
                         </button>
                     </div>
