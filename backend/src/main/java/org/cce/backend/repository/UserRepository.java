@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Optional;
 
 public interface UserRepository {
-    Optional<UserDetails> findByEmail(String email);
-    void addUser(User user);
+    void save(User user);
+
+    Optional<UserDetails> findByUsername(String username);
 }

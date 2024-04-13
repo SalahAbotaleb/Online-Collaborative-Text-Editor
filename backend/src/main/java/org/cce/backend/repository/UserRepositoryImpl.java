@@ -12,12 +12,12 @@ public class UserRepositoryImpl implements UserRepository{
     HashMap<String, User> users = new HashMap<>();
 
     @Override
-    public Optional<UserDetails> findByEmail(String email) {
+    public Optional<UserDetails> findByUsername(String email) {
         return Optional.ofNullable(users.get(email));
     }
 
     @Override
-    public void addUser(User user) {
-        users.put(user.getEmail(),user);
+    public void save(User user) {
+        users.put(user.getUsername(),user);
     }
 }

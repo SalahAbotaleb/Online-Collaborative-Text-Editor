@@ -1,4 +1,4 @@
-package org.cce.backend.controller;
+package org.cce.backend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class AuthenticationResponse {
-    private String token;
+public class AuthenticationRequestDTO {
+    private String username;
+    private String password;
+    private String email;
 }
