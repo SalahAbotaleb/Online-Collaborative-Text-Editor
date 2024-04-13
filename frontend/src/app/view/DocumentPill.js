@@ -7,10 +7,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import DriveFileRenameOutlineRoundedIcon from '@mui/icons-material/DriveFileRenameOutlineRounded';
 import ShareIcon from '@mui/icons-material/Share';
 
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-}
-
 export default function DocumentPill({name, owner, date}) {
     return (
         <div
