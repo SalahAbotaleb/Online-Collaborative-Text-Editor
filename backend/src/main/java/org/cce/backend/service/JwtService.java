@@ -4,6 +4,9 @@ package org.cce.backend.service;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.cce.backend.entity.Token;
+import org.cce.backend.repository.TokenRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +14,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -18,6 +22,9 @@ public class JwtService {
 
     private String secretKey;
     private JwtParser parser;
+
+    @Autowired
+    private TokenRepository tokenRepository;
 
     private final int keyDuration = 24*60*60*1000;
     public JwtService() {
@@ -66,8 +73,11 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails){
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        String username = extractUsername(token);
+        boolean isTokenValid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        return isTokenValid && tokenRepository.findByTokenKey(token)
+                .stream()
+                .findFirst().map(t->t.getIsValid()).orElse(false);
     }
 
     public boolean isTokenExpired(String token) {

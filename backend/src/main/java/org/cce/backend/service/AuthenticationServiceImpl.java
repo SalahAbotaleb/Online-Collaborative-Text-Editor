@@ -1,5 +1,6 @@
 package org.cce.backend.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.cce.backend.dto.AuthenticationRequestDTO;
 import org.cce.backend.dto.AuthenticationResponseDTO;
@@ -11,12 +12,15 @@ import org.cce.backend.exception.UserAlreadyExistsException;
 import org.cce.backend.mapper.RegisterRequestDTOUserMapper;
 import org.cce.backend.repository.TokenRepository;
 import org.cce.backend.repository.UserRepository;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -67,6 +71,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .findFirst()
                 .orElseThrow(() -> new UsernameNotFoundException("User with username " + username + " not found"));
         return generateJwt(user);
+    }
+
+    @Override
+    public void logout(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        String jwt;
+        if(header == null ||!header.startsWith("Bearer ")){
+            return;
+        }
+        final int tokenStart = "Bearer ".length();
+        jwt = header.substring(tokenStart);
+        disableJwt(jwt);
+    }
+
+    private void disableJwt(String jwtToken){
+        List<Token> token=tokenRepository.findByTokenKey(jwtToken);
+        token.stream().findFirst().ifPresent((t)->{
+            t.setIsValid(false);
+            tokenRepository.save(t);
+        });
     }
 
     private AuthenticationResponseDTO generateJwt(User user) {
