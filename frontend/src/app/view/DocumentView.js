@@ -6,108 +6,93 @@ import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
 
 const files = [
     {
+        _id: 1,
         title: 'Document jknkjnkjnkjnasd1',
         owner: 'Johneqweqweqweasdasdasdasad Doe',
         date: '12/12/2021'
     },
     {
+        _id: 2,
         title: 'Document 2',
         owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 3,
         title: 'Document 3',
-        owner: 'John Doe',
+        owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 4,
         title: 'Document 4',
         owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 5,
         title: 'Document 5',
-        owner: 'John Doe',
+        owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 6,
         title: 'Document 6',
         owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 7,
         title: 'Document 7',
-        owner: 'John Doe',
+        owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 8,
         title: 'Document 8',
         owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 9,
         title: 'Document 9',
-        owner: 'John Doe',
+        owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 10,
         title: 'Document 10',
         owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 11,
         title: 'Document 11',
-        owner: 'John Doe',
+        owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 12,
         title: 'Document 12',
         owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 13,
         title: 'Document 13',
-        owner: 'John Doe',
+        owner: 'Jane Doe',
         date: '12/12/2021'
     },
     {
+        _id: 14,
         title: 'Document 14',
-        owner: 'Jane Doe',
-        date: '12/12/2021'
-    },
-    {
-        title: 'Document 15',
-        owner: 'John Doe',
-        date: '12/12/2021'
-    },
-    {
-        title: 'Document 16',
-        owner: 'Jane Doe',
-        date: '12/12/2021'
-    },
-    {
-        title: 'Document 17',
-        owner: 'John Doe',
-        date: '12/12/2021'
-    },
-    {
-        title: 'Document 18',
-        owner: 'Jane Doe',
-        date: '12/12/2021'
-    },
-    {
-        title: 'Document 19',
-        owner: 'John Doe',
-        date: '12/12/2021'
-    },
-    {
-        title: 'Document 20',
         owner: 'Jane Doe',
         date: '12/12/2021'
     }
 ]
 export default function DocumentView() {
     const [selected, setSelected] = useState('owned by anyone');
+    const [docs, setDocs] = useState(files);
     return (
         <div className="bg-[#f1f3f4] flex flex-col justify-top items-center p-4 min-h-screen">
             <div className="flex justify-around items-top p-4 w-10/12">
@@ -150,8 +135,8 @@ export default function DocumentView() {
                 <p className="text-[#5f6368] font-['Product_sans'] truncate text-center basis-2/12 text-md">Date</p>
                 <div className="basis-1/12"/>
             </div>
-            {files.map((file, index) => {
-                return <DocumentPill key={index} title={file.title} owner={file.owner} date={file.date}/>
+            {docs.map((file) => {
+                return <DocumentPill key={file._id} file={file} files={docs} setFiles={setDocs}/>
             })}
         </div>
     )

@@ -1,8 +1,15 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, useState } from 'react'
 
-export default function Rename({open, name, setOpen, setName}) {
-    const [newName, setNewName] = useState(name)
+export default function Rename({open, setOpen,file , files, setFiles}) {
+    const [newName, setNewName] = useState(file.title)
+
+    function setName(newName) {
+        const newFiles = [...files]
+        const newFile = newFiles.find(f => f._id === file._id)
+        newFile.title = newName
+        setFiles(newFiles)
+    }
 
     function closeModal() {
         setOpen(false)
