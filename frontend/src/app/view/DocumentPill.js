@@ -6,14 +6,25 @@ import {Menu, Transition} from '@headlessui/react'
 import DeleteIcon from '@mui/icons-material/Delete';
 import DriveFileRenameOutlineRoundedIcon from '@mui/icons-material/DriveFileRenameOutlineRounded';
 import ShareIcon from '@mui/icons-material/Share';
+import {useState} from 'react';
+import Rename from './Rename';
 
-export default function DocumentPill({name, owner, date}) {
+export default function DocumentPill({title, owner, date}) {
+    const [rename, setRename] = useState(false);
+    const [deleteDoc, setDeleteDoc] = useState(false);
+    const [share, setShare] = useState(false);
+
+    const [name, setName] = useState(title);
+    const [ownerName, setOwnerName] = useState(owner);
+    const [dateCreated, setDateCreated] = useState(date);
+
     return (
         <div
             className="flex justify-between items-center mb-4 py-4 pl-8 bg-white rounded-lg shadow-md w-10/12 hover:bg-blue-300 cursor-pointer">
             <h1 className="text-[#5f6368] font-['Product_sans'] truncate basis-7/12 text-xl font-bold">{name}</h1>
-            <p className="text-[#5f6368] font-['Product_sans'] truncate text-center basis-2/12 text-md">{owner}</p>
-            <p className="text-[#5f6368] font-['Product_sans'] truncate text-center basis-2/12 text-md">{date}</p>
+            <p className="text-[#5f6368] font-['Product_sans'] truncate text-center basis-2/12 text-md">{ownerName}</p>
+            <p className="text-[#5f6368] font-['Product_sans'] truncate text-center basis-2/12 text-md">{dateCreated}</p>
+            <Rename open={rename} setOpen={setRename} name={name} setName={setName}/>
 
             <Menu as='div' className="relative inline-block basis-1/12 text-center">
                 <Menu.Button type="button"
@@ -44,6 +55,7 @@ export default function DocumentPill({name, owner, date}) {
                             <Menu.Item>
                                 <a
                                     href="#"
+                                    onClick={() => setRename(true)}
                                     className='hover:bg-gray-200 text-gray-900 block pl-2 pr-4 py-2 text-sm rounded-md'
                                 >
                                     <DriveFileRenameOutlineRoundedIcon sx={{color:'#5f6368', marginRight:1}}/>
