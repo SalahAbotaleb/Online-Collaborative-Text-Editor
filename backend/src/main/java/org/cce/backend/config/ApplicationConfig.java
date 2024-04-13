@@ -1,6 +1,7 @@
 package org.cce.backend.config;
 
 import lombok.RequiredArgsConstructor;
+import org.cce.backend.entity.User;
 import org.cce.backend.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
+
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
@@ -22,8 +25,13 @@ public class ApplicationConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByUsername(username)
-                .orElseThrow(()->new UsernameNotFoundException("User with username "+username+" not found"));
+        return (username) -> {
+            return userRepository.findByUsername(username)
+                    .stream()
+                    .findFirst()
+                    .orElseThrow(()->new UsernameNotFoundException("User with username "+username+" not found"));
+        };
+
     }
 
     @Bean

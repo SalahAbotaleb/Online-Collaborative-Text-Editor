@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.cce.backend.dto.AuthenticationRequestDTO;
 import org.cce.backend.dto.AuthenticationResponseDTO;
 import org.cce.backend.dto.RegisterRequestDTO;
+import org.cce.backend.service.AuthenticationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

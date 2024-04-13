@@ -2,6 +2,8 @@ package org.cce.backend.entity;
 
 import lombok.*;
 import org.cce.backend.enums.Role;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,12 +15,14 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Builder
+@Document
 public class User implements UserDetails {
-    private Integer id;
+    @Id
+    private String id;
     private String username;
     private String password;
     private String email;
-
+    
     private Role role;
 
     @Override
