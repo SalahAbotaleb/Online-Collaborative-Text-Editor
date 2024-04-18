@@ -3,6 +3,9 @@ import {useState, Fragment} from 'react'
 import {Listbox, Transition} from '@headlessui/react'
 import DocumentPill from './DocumentPill'
 import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
+import Image from 'next/image';
+import plus from '../assets/plus.png';
+import CreateDoc from './CreateDoc';
 
 const files = [
     {
@@ -93,6 +96,7 @@ const files = [
 export default function DocumentView() {
     const [selected, setSelected] = useState('owned by anyone');
     const [docs, setDocs] = useState(files);
+    const [create, setCreate] = useState(false);
     return (
         <div className="bg-[#f1f3f4] flex flex-col justify-top items-center p-4 min-h-screen">
             <div className="flex justify-around items-top p-4 w-10/12">
@@ -104,7 +108,7 @@ export default function DocumentView() {
                 <Listbox as='div' value={selected} onChange={setSelected}>
                     <Listbox.Button className="bg-white pl-4 pr-3 py-2 rounded-lg shadow-md">
                         <span className="text-[#5f6368] font-['Product_sans'] text-lg">{selected}</span>
-                        <ArrowDropDownRoundedIcon sx={{color:'#5f6368', marginLeft:1, fontSize: 33}}/>
+                        <ArrowDropDownRoundedIcon sx={{color: '#5f6368', marginLeft: 1, fontSize: 33}}/>
                     </Listbox.Button>
                     <Transition
                         as={Fragment}
@@ -115,7 +119,8 @@ export default function DocumentView() {
                         leaveFrom="transform opacity-100 scale-100"
                         leaveTo="transform opacity-0 scale-95"
                     >
-                        <Listbox.Options className="text-[#5f6368] font-['Product_sans'] absolute z-10 mt-2 w-48 p-2 bg-white rounded-md shadow-md text-md">
+                        <Listbox.Options
+                            className="text-[#5f6368] font-['Product_sans'] absolute z-10 mt-2 w-48 p-2 bg-white rounded-md shadow-md text-md">
                             <Listbox.Option value="owned by anyone"
                                             className="rounded-md cursor-pointer p-2 hover:bg-gray-200">Owned by
                                 anyone</Listbox.Option>
@@ -138,6 +143,12 @@ export default function DocumentView() {
             {docs.map((file) => {
                 return <DocumentPill key={file._id} file={file} files={docs} setFiles={setDocs}/>
             })}
+            <button
+                onClick={() => setCreate(true)}
+                className="bg-white shadow-md hover:shadow-xl fixed right-8 bottom-8 text-white rounded-full w-14 h-14 flex justify-center items-center overflow-hidden">
+                <Image src={plus} alt="Add" width={64} height={64}/>
+            </button>
+            <CreateDoc open={create} setOpen={setCreate} files={docs} setFiles={setDocs}/>
         </div>
     )
 }
