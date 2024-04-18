@@ -47,7 +47,7 @@ export default function Share({open, setOpen, title}) {
                                     as="h3"
                                     className="text-lg font-medium leading-6 text-gray-900"
                                 >
-                                    Share '{title}'
+                                    Share &apos;{title}&apos;
                                 </Dialog.Title>
                                 <input type="text" value={user} onChange={(e) => setUser(e.target.value)}
                                        className="block text-black border-gray-500 border-2 focus:border-0 w-full px-4 py-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 mt-4"
