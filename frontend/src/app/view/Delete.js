@@ -47,7 +47,7 @@ export default function Delete({open, setOpen,file , files, setFiles}) {
                                 </Dialog.Title>
                                 <div className="mt-2">
                                     <p className="text-sm text-gray-500">
-                                        '{file.title}' will be deleted permanently.
+                                        &apos;{file.title}&apos; will be deleted permanently.
                                     </p>
                                 </div>
                                 <div className="mt-2">
