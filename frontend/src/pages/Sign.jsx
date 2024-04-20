@@ -13,8 +13,7 @@ export default function Sign() {
 
     return (
         <div className='bg-[#f0f4f9] h-screen flex justify-center items-center'>
-            <div style={{transition: "all 0.6s"}}
-                 className={`bg-white w-9/12 rounded-3xl flex space-between ${signingIn ? 'h-3/6' : 'h-4/6'}`}>
+            <div className={`transition-all duration-[600ms] bg-white w-9/12 rounded-3xl flex space-between ${signingIn ? 'h-3/6' : 'h-4/6'}`}>
                 <div className='w-1/2 p-8 flex flex-col'>
                     <img src={docimg} alt="Docs" width={50} height={50} className='mb-6'/>
                     <h1 className='text-4xl text-black font-["Product_sans"]'>Sign in</h1>
@@ -58,13 +57,13 @@ export default function Sign() {
 
                     <div className='flex justify-end w-full'>
                         <button onClick={
-                            (e) => {
+                            () => {
                                 setSigningIn(!signingIn);
                             }
-                        } className="text-blue-600 bg-white mr-6 self-end text-black px-4 py-2 mb-4 rounded-3xl hover:bg-slate-100">
+                        } className="text-blue-600 bg-white mr-6 self-end px-4 py-2 mb-4 rounded-3xl hover:bg-slate-100">
                             {signingIn ? 'Create an account' : 'Already have an account'}
                         </button>
-                        <button onClick={(e) => {
+                        <button onClick={() => {
                             console.log(username);
                             navigate('/view')
                             // router.push('/view');
