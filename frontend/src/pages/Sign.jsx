@@ -1,10 +1,7 @@
-'use client';
 import {useState} from 'react';
 import docimg from '../assets/doc_image.png';
-import Image from 'next/image';
 import {Transition} from '@headlessui/react';
-import { useRouter } from 'next/navigation'
-
+import { useNavigate } from "react-router-dom";
 
 export default function Sign() {
     const [username, setUsername] = useState('');
@@ -12,15 +9,14 @@ export default function Sign() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [email, setEmail] = useState('');
     const [signingIn, setSigningIn] = useState(true);
-    const router = useRouter();
-
+    const navigate = useNavigate();
 
     return (
         <div className='bg-[#f0f4f9] h-screen flex justify-center items-center'>
             <div style={{transition: "all 0.6s"}}
                  className={`bg-white w-9/12 rounded-3xl flex space-between ${signingIn ? 'h-3/6' : 'h-4/6'}`}>
                 <div className='w-1/2 p-8 flex flex-col'>
-                    <Image src={docimg} alt="Docs" width={50} height={50} className='mb-6'/>
+                    <img src={docimg} alt="Docs" width={50} height={50} className='mb-6'/>
                     <h1 className='text-4xl text-black font-["Product_sans"]'>Sign in</h1>
                     <p className='text-black mt-4'>Continue to Docs</p>
                 </div>
@@ -70,7 +66,8 @@ export default function Sign() {
                         </button>
                         <button onClick={(e) => {
                             console.log(username);
-                            router.push('/view');
+                            navigate('/view')
+                            // router.push('/view');
                         }} className="hover:bg-[#0e4eb5] self-end text-white px-4 py-2 mb-4 mr-4 rounded-3xl shadow-md bg-[#0b57d0]">
                             {signingIn ? 'Sign in' : 'Sign up'}
                         </button>
