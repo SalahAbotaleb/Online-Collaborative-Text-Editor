@@ -1,7 +1,8 @@
-import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, useState } from 'react'
+import {Dialog, Transition} from '@headlessui/react'
+import {Fragment, useState} from 'react'
+import InputField from "../../utils/InputField.jsx";
 
-export default function Rename({open, setOpen,file , files, setFiles}) {
+export default function Rename({open, setOpen, file, files, setFiles}) {
     const [newName, setNewName] = useState(file.title)
 
     function setName(newName) {
@@ -14,6 +15,7 @@ export default function Rename({open, setOpen,file , files, setFiles}) {
     function closeModal() {
         setOpen(false)
     }
+
     return (
         <Transition appear show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" onClose={closeModal}>
@@ -26,7 +28,7 @@ export default function Rename({open, setOpen,file , files, setFiles}) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black/25" />
+                    <div className="fixed inset-0 bg-black/25"/>
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -40,7 +42,8 @@ export default function Rename({open, setOpen,file , files, setFiles}) {
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                            <Dialog.Panel
+                                className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                                 <Dialog.Title
                                     as="h3"
                                     className="text-lg font-medium leading-6 text-gray-900"
@@ -52,9 +55,7 @@ export default function Rename({open, setOpen,file , files, setFiles}) {
                                         Please enter a new name for the item:
                                     </p>
                                 </div>
-                                <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)}
-                                        className="block text-black border-gray-500 border-2 focus:border-0 w-full px-4 py-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 mt-4"
-                                        placeholder="New name"/>
+                                <InputField value={newName} setValue={setNewName} label='New Name' type='text'/>
                                 <div className="mt-4 flex w-full justify-end">
                                     <button
                                         type="button"

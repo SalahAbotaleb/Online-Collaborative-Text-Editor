@@ -2,6 +2,7 @@ import {useState} from 'react';
 import docimg from '../assets/doc_image.png';
 import {Transition} from '@headlessui/react';
 import {useNavigate} from "react-router-dom";
+import InputField from "../utils/InputField.jsx";
 
 export default function Sign() {
     const [username, setUsername] = useState('');
@@ -20,7 +21,7 @@ export default function Sign() {
                 <p className='text-black mt-4'>Continue to Docs</p>
             </div>
             <div className='w-1/2 p-4 flex flex-col justify-center items-center'>
-                <div className='flex flex-col flex-1 w-full justify-center mr-6 space-y-4'>
+                <div className='flex flex-col flex-1 w-full justify-center mr-6'>
                     <Transition show={!signingIn}
                                 enter="transition-opacity duration-500"
                                 enterFrom="opacity-0"
@@ -29,28 +30,13 @@ export default function Sign() {
                                 leaveFrom="opacity-100"
                                 leaveTo="opacity-0"
                     >
-                        <div className='relative'>
-                            <input id='email' type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                                   className="peer block text-black border-gray-500 border-2 w-full px-4 py-4 rounded-lg shadow-md focus:outline-none focus:border-blue-600 focus:border-opacity-50"
-                                   placeholder=" "/>
-                            <label htmlFor="email"
-                                   className='absolute text-[17px] text-opacity-80 peer-focus:text-opacity-80 text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-4 peer-focus:px-4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-7 cursor-text peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 bg-white rounded-sm start-1'>Email</label>
-                        </div>
+                        <InputField value={email} setValue={setEmail} label='Email' type='email'/>
                     </Transition>
-                    <div className='relative'>
-                        <input id='Username' type="text" value={username} onChange={(e) => setUsername(e.target.value)}
-                               className="peer block text-black border-gray-500 border-2 w-full px-4 py-4 rounded-lg shadow-md focus:outline-none focus:border-blue-600 focus:border-opacity-50"
-                               placeholder=" "/>
-                        <label htmlFor="Username"
-                               className='absolute text-[17px] text-opacity-80 peer-focus:text-opacity-80 text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-4 peer-focus:px-4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-7 cursor-text peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 bg-white rounded-sm start-1'>Username</label>
+                    <div>
+                        <InputField value={username} setValue={setUsername} label='Username' type='text'/>
                     </div>
-                    <div className='relative'>
-                        <input id='Password' type="password" value={password}
-                               onChange={(e) => setPassword(e.target.value)}
-                               className="peer block text-black border-gray-500 border-2 w-full px-4 py-4 rounded-lg shadow-md focus:outline-none focus:border-blue-600 focus:border-opacity-50"
-                               placeholder=" "/>
-                        <label htmlFor="Password"
-                               className='absolute text-[17px] text-opacity-80 peer-focus:text-opacity-80 text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-4 peer-focus:px-4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-7 cursor-text peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 bg-white rounded-sm start-1'>Password</label>
+                    <div>
+                        <InputField value={password} setValue={setPassword} label='Password' type='password'/>
                     </div>
                     <Transition show={!signingIn}
                                 enter="transition-opacity duration-500"
@@ -60,16 +46,8 @@ export default function Sign() {
                                 leaveFrom="opacity-100"
                                 leaveTo="opacity-0"
                     >
-                        <div className='relative'>
-                            <input type="password" value={confirmPassword}
-                                   id={'confirmPassword'}
-                                   onChange={(e) => setConfirmPassword(e.target.value)}
-                                   className="peer block text-black border-gray-500 border-2 w-full px-4 py-4 rounded-lg shadow-md focus:outline-none focus:border-blue-600 focus:border-opacity-50"
-                                   placeholder=" "/>
-                            <label htmlFor="confirmPassword"
-                                   className='absolute text-[17px] text-opacity-80 peer-focus:text-opacity-80 text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] px-4 peer-focus:px-4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-7 cursor-text peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 bg-white rounded-sm start-1'>Confirm
-                                Password</label>
-                        </div>
+                        <InputField value={confirmPassword} setValue={setConfirmPassword} label='Confirm Password'
+                                    type='password'/>
                     </Transition>
                 </div>
 

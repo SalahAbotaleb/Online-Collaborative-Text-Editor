@@ -1,6 +1,7 @@
 import {Dialog, Transition, Listbox} from '@headlessui/react'
 import {Fragment, useState} from 'react'
 import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
+import InputField from "../../utils/InputField.jsx";
 
 
 export default function Share({open, setOpen, title}) {
@@ -49,9 +50,7 @@ export default function Share({open, setOpen, title}) {
                                 >
                                     Share &apos;{title}&apos;
                                 </Dialog.Title>
-                                <input type="text" value={user} onChange={(e) => setUser(e.target.value)}
-                                       className="block text-black border-gray-500 border-2 focus:border-0 w-full px-4 py-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50 mt-4"
-                                       placeholder="username"/>
+                                <InputField value={user} setValue={setUser} label='User' type='text'/>
                                 <div className="mt-4 mb-2">
                                     <p className="text-sm text-gray-500">
                                         Permission
