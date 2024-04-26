@@ -6,22 +6,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.cce.backend.entity.User;
-import org.cce.backend.entity.UserDoc;
-
-import java.util.List;
+import org.cce.backend.enums.Permission;
+import jakarta.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class DocumentDTO {
-    private String id;
-    private User owner;
+public class UserDocDTO {
+    @NotNull(message = "User is required")
     @JsonProperty(required = true)
-    private String title;
-//    @JsonProperty(required = true)
-    private String content;
-
-    private List<UserDoc> sharedWith;
-
+    private User user;
+    @NotNull(message = "Permission is required")
+    @JsonProperty(required = true)
+    private Permission permission;
 }
