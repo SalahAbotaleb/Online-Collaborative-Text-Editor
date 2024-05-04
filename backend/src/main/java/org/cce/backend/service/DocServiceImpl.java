@@ -60,7 +60,7 @@ public class DocServiceImpl implements DocService {
     public String deleteDoc(String id) {
         docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
         docRepository.deleteById(id);
-        return id + " successfully deleted";
+        return id;
     }
 
     @Transactional
