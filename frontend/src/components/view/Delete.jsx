@@ -7,8 +7,17 @@ export default function Delete({open, setOpen,file , files, setFiles}) {
         setOpen(false)
     }
     function deleteFile() {
-        const newFiles = files.filter(f => f._id !== file._id)
-        setFiles(newFiles)
+        fetch(`http://localhost:3000/api/docs/delete/${file.id}`, {
+            method: 'DELETE',
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem('token')} `
+            }
+        }).then(res => res.text()).then(data => {
+            console.log(data);
+            setFiles(oldState => oldState.filter(f => f.id !== data))
+        }).catch(err => {
+            console.log(err);
+        });
         setOpen(false)
     }
     return (
