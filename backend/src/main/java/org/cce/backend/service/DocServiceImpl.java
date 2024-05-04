@@ -76,6 +76,16 @@ public class DocServiceImpl implements DocService {
     @Override
     public UserDocDTO addUser(String id, UserDocDTO userDocDTO) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+        UserDoc user = doc.getSharedWith().stream()
+                .filter(userDoc -> userDoc.getUser().getId().equals(userDocDTO.getUser().getId()))
+                .findFirst()
+                .orElse(null);
+        if(user != null) {
+            return UserDocDTO.builder()
+                    .user(user.getUser())
+                    .permission(user.getPermission())
+                    .build();
+        }
         UserDoc sharedUser = UserDoc.builder()
                 .user(userDocDTO.getUser())
                 .permission(userDocDTO.getPermission())
