@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 
 @Service
@@ -149,6 +151,25 @@ public class DocServiceImpl implements DocService {
 
         docRepository.save(doc);
         return "User permission updated successfully";
+    }
+
+    @Override
+    public Iterable<DocumentDTO> getAllDocs() {
+        User user = getCurrentUser();
+        ArrayList <DocumentDTO> docs = new ArrayList<>();
+
+        if(user == null) {
+            throw new RuntimeException("User not found");
+        }
+        return docRepository.findByOwner(user).stream()
+                .map(doc -> DocumentDTO.builder()
+                        .id(doc.getId())
+                        .owner(doc.getOwner())
+                        .title(doc.getTitle())
+                        .content(doc.getContent())
+                        .sharedWith(doc.getSharedWith())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private void validatePermission(UserDocDTO userDocDTO) {

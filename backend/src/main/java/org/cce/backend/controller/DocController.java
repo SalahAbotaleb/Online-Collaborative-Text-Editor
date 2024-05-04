@@ -50,6 +50,11 @@ public class DocController {
         return docService.updatePermission(id, userDoc);
     }
 
+    @GetMapping("/all")
+    public Iterable<DocumentDTO> getAllDocs() {
+        return docService.getAllDocs();
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {

@@ -12,4 +12,5 @@ public interface DocService {
     DocumentDTO getSharedUsers(String id);
     String removeUser(String id, UserDocDTO userDoc);
     String updatePermission(String id, UserDocDTO userDoc);
+    Iterable<DocumentDTO> getAllDocs();
 }
