@@ -23,12 +23,12 @@ export default function DocumentPill({file, files, setFiles}) {
             if (e.target.closest('button') || e.target.closest('div[role="dialog"]'))
                 e.stopPropagation();
             else
-                navigate(`/edit/${file._id}`, {state: file.title});
+                navigate(`/edit/${file.id}`, {state: file.title});
             // Router.push(`/edit/${file._id}`);
         }}
     >
         <h1 className="text-[#5f6368] font-['Product_sans'] truncate basis-7/12 text-xl font-bold">{file.title}</h1>
-        <p className="text-[#5f6368] font-['Product_sans'] truncate text-center basis-2/12 text-md">{file.owner}</p>
+        <p className="text-[#5f6368] font-['Product_sans'] truncate text-center basis-2/12 text-md">{file.owner.username}</p>
         <p className="text-[#5f6368] font-['Product_sans'] truncate text-center basis-2/12 text-md">{file.date}</p>
         <Rename open={rename} setOpen={setRename} file={file} files={files} setFiles={setFiles}/>
         <Delete open={deleteDoc} setOpen={setDeleteDoc} file={file} files={files} setFiles={setFiles}/>
