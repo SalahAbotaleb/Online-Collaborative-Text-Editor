@@ -5,19 +5,24 @@ import InputField from "../../utils/InputField.jsx";
 export default function Rename({open, setOpen, file, files, setFiles}) {
     const [newName, setNewName] = useState(file.title)
 
-    function setName(newName) {
-        const newFiles = [...files]
-        const newFile = newFiles.find(f => f._id === file._id)
-        newFile.title = newName
-        setFiles(newFiles)
+    function setName() {
+        fetch(`http://localhost:3000/api/docs/rename/${file.id}`, {
+            method: 'PATCH', headers: {
+                "Authorization": `Bearer ${localStorage.getItem('token')} `, 'Content-Type': 'application/json'
+            }, body: JSON.stringify({title: newName})
+        }).then(() => {
+            setFiles(oldState => oldState.map(f => f.id === file.id ? {...f, title: newName} : f));
+        }).catch(err => {
+            console.log(err);
+        });
+        closeModal();
     }
 
     function closeModal() {
         setOpen(false)
     }
 
-    return (
-        <Transition appear show={open} as={Fragment}>
+    return (<Transition appear show={open} as={Fragment}>
             <Dialog as="div" className="relative z-10" onClose={closeModal}>
                 <Transition.Child
                     as={Fragment}
@@ -60,10 +65,7 @@ export default function Rename({open, setOpen, file, files, setFiles}) {
                                     <button
                                         type="button"
                                         className="inline-flex w-20 justify-center rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                                        onClick={() => {
-                                            setName(newName)
-                                            closeModal()
-                                        }}
+                                        onClick={setName}
                                     >
                                         OK
                                     </button>
@@ -73,6 +75,5 @@ export default function Rename({open, setOpen, file, files, setFiles}) {
                     </div>
                 </div>
             </Dialog>
-        </Transition>
-    )
+        </Transition>)
 }
