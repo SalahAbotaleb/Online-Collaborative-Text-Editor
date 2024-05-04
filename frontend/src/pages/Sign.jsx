@@ -12,6 +12,37 @@ export default function Sign() {
     const [signingIn, setSigningIn] = useState(true);
     const navigate = useNavigate();
 
+    function handleSubmit(e) {
+        if (signingIn) {
+            fetch('http://localhost:3000/api/auth/login', {
+                method: 'POST', headers: {
+                    'Content-Type': 'application/json'
+                }, body: JSON.stringify({
+                    "username": username,
+                    "password": password
+                })
+            }).then(res => res.json()).then(data => {
+                localStorage.setItem('token', data.token);
+                navigate('/view');
+            }).catch(err => {
+                console.log(err);
+            })
+        } else {
+            fetch('http://localhost:3000/api/auth/register', {
+                method: 'POST', headers: {
+                    'Content-Type': 'application/json'
+                }, body: JSON.stringify({
+                    username, email, password
+                })
+            }).then(res => res.json()).then(data => {
+                localStorage.setItem('token', data.token);
+                navigate('/view');
+            }).catch(err => {
+                console.log(err);
+            })
+        }
+    }
+
     return (<div className='bg-[#f0f4f9] h-screen flex justify-center items-center'>
         <div
             className={`transition-all duration-[600ms] bg-white w-9/12 rounded-3xl flex space-between ${signingIn ? 'h-3/6' : 'h-4/6'}`}>
@@ -58,11 +89,7 @@ export default function Sign() {
                             className="text-blue-600 bg-white mr-6 self-end px-4 py-2 mb-4 rounded-3xl hover:bg-slate-100">
                         {signingIn ? 'Create an account' : 'Already have an account'}
                     </button>
-                    <button onClick={() => {
-                        console.log(username);
-                        navigate('/view')
-                        // router.push('/view');
-                    }}
+                    <button onClick={handleSubmit}
                             className="hover:bg-[#0e4eb5] self-end text-white px-4 py-2 mb-4 mr-4 rounded-3xl shadow-md bg-[#0b57d0]">
                         {signingIn ? 'Sign in' : 'Sign up'}
                     </button>
