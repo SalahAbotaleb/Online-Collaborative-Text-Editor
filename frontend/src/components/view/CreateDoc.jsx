@@ -5,16 +5,24 @@ import InputField from "../../utils/InputField.jsx";
 export default function CreateDoc({open, setOpen, files, setFiles}) {
     const [title, setTitle] = useState('')
 
+
     function closeModal() {
         setOpen(false)
         setTitle('')
     }
 
-    function createFile(title) {
-        const newFiles = [{
-            _id: files.length + 1, title: title, owner: 'Jane Doe', date: '12/12/2021'
-        }, ...files]
-        setFiles(newFiles)
+    function createFile() {
+        fetch('http://localhost:3000/api/docs/create', {
+            method: 'POST', headers: {
+                'Content-Type': 'application/json', "Authorization": `Bearer ${localStorage.getItem('token')} `
+            }, body: JSON.stringify({
+                title: title
+            })
+        }).then(res => res.json()).then(data => {
+            setFiles(oldState => [data, ...oldState]);
+        }).catch(err => {
+            console.log(err);
+        });
         setOpen(false)
     }
 
@@ -62,7 +70,7 @@ export default function CreateDoc({open, setOpen, files, setFiles}) {
                                 <button
                                     type="button"
                                     className="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-blue-500 border border-transparent rounded-md hover:bg-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
-                                    onClick={() => createFile(title)}
+                                    onClick={createFile}
                                 >
                                     Create
                                 </button>
