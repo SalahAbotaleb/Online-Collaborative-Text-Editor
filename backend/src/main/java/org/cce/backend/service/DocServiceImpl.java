@@ -68,120 +68,144 @@ public class DocServiceImpl implements DocService {
         return "Title updated successfully";
     }
 
-    @Transactional
     @Override
-    public UserDocDTO addUser(String id, UserDocDTO userDocDTO) {
-        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-        UserDoc user = doc.getSharedWith().stream()
-                .filter(userDoc -> userDoc.getUser().getId().equals(userDocDTO.getUser().getId()))
-                .findFirst()
-                .orElse(null);
-//        if (user != null) {
-//            return UserDocDTO.builder()
-//                    .user(user.getUser())
-//                    .permission(user.getPermission())
-//                    .build();
-//        }
-//        UserDoc sharedUser = UserDoc.builder()
-//                .user(userDocDTO.getUser())
-//                .permission(userDocDTO.getPermission())
-//                .build();
-
-        if (doc.getSharedWith() == null) {
-            doc.setSharedWith(new ArrayList<>());
-        }
-
-        doc.getSharedWith().add(sharedUser);
-        docRepository.save(doc);
-        return userDocDTO;
+    public UserDocDTO addUser(String id, UserDocDTO userDoc) {
+        return null;
     }
 
     @Override
     public DocumentDTO getSharedUsers(String id) {
-        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-        if (doc.getSharedWith() == null) {
-            return DocumentDTO.builder()
-                    .id(doc.getId())
-                    .owner(doc.getOwner())
-                    .title(doc.getTitle())
-                    .content(doc.getContent())
-                    .sharedWith(new ArrayList<>())
-                    .build();
-        }
-//        for(UserDoc userDoc : doc.getSharedWith()) {
-//            sharedUsers.add(userDoc.getUser());
-//        }
-        return DocumentDTO.builder()
-                .id(doc.getId())
-                .owner(doc.getOwner())
-                .title(doc.getTitle())
-                .content(doc.getContent())
-                .sharedWith(doc.getSharedWith())
-                .build();
+        return null;
     }
 
-    @Transactional
     @Override
-    public String removeUser(String id, UserDocDTO userDocDTO) {
-        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-
-        if (doc.getSharedWith() == null) {
-            return "No users to remove";
-        }
-
-
-        doc.getSharedWith().removeIf(userDoc -> {
-            User user = userDoc.getUser();
-            return user != null && user.getId().equals(userDocDTO.getUser().getId());
-        });
-        docRepository.save(doc);
-        return "User removed successfully";
+    public String removeUser(String id, UserDocDTO userDoc) {
+        return null;
     }
 
-    @Transactional
     @Override
-    public String updatePermission(String id, UserDocDTO userDocDTO) {
-        validatePermission(userDocDTO);
-        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-
-        if (doc.getSharedWith() == null) {
-            return "No users to update";
-        }
-
-        for (UserDoc userDoc : doc.getSharedWith()) {
-            User user = userDoc.getUser();
-            if (user != null && user.getId().equals(userDocDTO.getUser().getId())) {
-                userDoc.setPermission(userDocDTO.getPermission());
-            }
-        }
-
-        docRepository.save(doc);
-        return "User permission updated successfully";
+    public String updatePermission(String id, UserDocDTO userDoc) {
+        return null;
     }
 
     @Override
     public Iterable<DocumentDTO> getAllDocs() {
-        User user = getCurrentUser();
-        ArrayList<DocumentDTO> docs = new ArrayList<>();
-
-        if (user == null) {
-            throw new RuntimeException("User not found");
-        }
-        return docRepository.findByOwner(user).stream()
-                .map(doc -> DocumentDTO.builder()
-                        .id(doc.getId())
-                        .owner(doc.getOwner())
-                        .title(doc.getTitle())
-                        .content(doc.getContent())
-                        .sharedWith(doc.getSharedWith())
-                        .build())
-                .collect(Collectors.toList());
+        return null;
     }
-
-    private void validatePermission(UserDocDTO userDocDTO) {
-        int permission = userDocDTO.getPermission().ordinal();
-        if (permission < 0 || permission > 2) {
-            throw new IllegalArgumentException("Invalid permission value. It should be 0, 1, or 2.");
-        }
-    }
+    //    @Transactional
+//    @Override
+//    public UserDocDTO addUser(String id, UserDocDTO userDocDTO) {
+//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//        UserDoc user = doc.getSharedWith().stream()
+//                .filter(userDoc -> userDoc.getUser().getId().equals(userDocDTO.getUser().getId()))
+//                .findFirst()
+//                .orElse(null);
+////        if (user != null) {
+////            return UserDocDTO.builder()
+////                    .user(user.getUser())
+////                    .permission(user.getPermission())
+////                    .build();
+////        }
+////        UserDoc sharedUser = UserDoc.builder()
+////                .user(userDocDTO.getUser())
+////                .permission(userDocDTO.getPermission())
+////                .build();
+//
+//        if (doc.getSharedWith() == null) {
+//            doc.setSharedWith(new ArrayList<>());
+//        }
+//
+//        doc.getSharedWith().add(sharedUser);
+//        docRepository.save(doc);
+//        return userDocDTO;
+//    }
+//
+//    @Override
+//    public DocumentDTO getSharedUsers(String id) {
+//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//        if (doc.getSharedWith() == null) {
+//            return DocumentDTO.builder()
+//                    .id(doc.getId())
+//                    .owner(doc.getOwner())
+//                    .title(doc.getTitle())
+//                    .content(doc.getContent())
+//                    .sharedWith(new ArrayList<>())
+//                    .build();
+//        }
+////        for(UserDoc userDoc : doc.getSharedWith()) {
+////            sharedUsers.add(userDoc.getUser());
+////        }
+//        return DocumentDTO.builder()
+//                .id(doc.getId())
+//                .owner(doc.getOwner())
+//                .title(doc.getTitle())
+//                .content(doc.getContent())
+//                .sharedWith(doc.getSharedWith())
+//                .build();
+//    }
+//
+//    @Transactional
+//    @Override
+//    public String removeUser(String id, UserDocDTO userDocDTO) {
+//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//
+//        if (doc.getSharedWith() == null) {
+//            return "No users to remove";
+//        }
+//
+//
+//        doc.getSharedWith().removeIf(userDoc -> {
+//            User user = userDoc.getUser();
+//            return user != null && user.getId().equals(userDocDTO.getUser().getId());
+//        });
+//        docRepository.save(doc);
+//        return "User removed successfully";
+//    }
+//
+//    @Transactional
+//    @Override
+//    public String updatePermission(String id, UserDocDTO userDocDTO) {
+//        validatePermission(userDocDTO);
+//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//
+//        if (doc.getSharedWith() == null) {
+//            return "No users to update";
+//        }
+//
+//        for (UserDoc userDoc : doc.getSharedWith()) {
+//            User user = userDoc.getUser();
+//            if (user != null && user.getId().equals(userDocDTO.getUser().getId())) {
+//                userDoc.setPermission(userDocDTO.getPermission());
+//            }
+//        }
+//
+//        docRepository.save(doc);
+//        return "User permission updated successfully";
+//    }
+//
+//    @Override
+//    public Iterable<DocumentDTO> getAllDocs() {
+//        User user = getCurrentUser();
+//        ArrayList<DocumentDTO> docs = new ArrayList<>();
+//
+//        if (user == null) {
+//            throw new RuntimeException("User not found");
+//        }
+//        return docRepository.findByOwner(user).stream()
+//                .map(doc -> DocumentDTO.builder()
+//                        .id(doc.getId())
+//                        .owner(doc.getOwner())
+//                        .title(doc.getTitle())
+//                        .content(doc.getContent())
+//                        .sharedWith(doc.getSharedWith())
+//                        .build())
+//                .collect(Collectors.toList());
+//    }
+//
+//    private void validatePermission(UserDocDTO userDocDTO) {
+//        int permission = userDocDTO.getPermission().ordinal();
+//        if (permission < 0 || permission > 2) {
+//            throw new IllegalArgumentException("Invalid permission value. It should be 0, 1, or 2.");
+//        }
+//    }
 }

@@ -33,7 +33,7 @@ dependencies {
 	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.12.5'
 	implementation group: 'org.springframework', name: 'spring-websocket', version: '6.1.6'
 	implementation group: 'org.springframework', name: 'spring-messaging', version: '6.1.6'
-
+	implementation group: 'org.springframework.security', name: 'spring-security-messaging', version: '6.2.4'
 }
 
 tasks.named('test') {

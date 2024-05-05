@@ -2,6 +2,7 @@ package org.cce.backend.repository;
 
 import org.cce.backend.entity.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
