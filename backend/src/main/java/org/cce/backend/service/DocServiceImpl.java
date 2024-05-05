@@ -8,6 +8,7 @@ import org.cce.backend.dto.DocumentDTO;
 import org.cce.backend.entity.User;
 import org.cce.backend.entity.UserDoc;
 import org.cce.backend.enums.Permission;
+import org.cce.backend.exception.UnauthorizedUserException;
 import org.cce.backend.exception.UserNotFoundException;
 import org.cce.backend.mapper.DocumentMapper;
 import org.cce.backend.mapper.UserDocMapper;
@@ -43,6 +44,9 @@ public class DocServiceImpl implements DocService {
     @Autowired
     UserDocMapper userDocMapper;
 
+    @Autowired
+    DocAuthorizationService docAuthorizationService;
+
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
         User user = userRepository.findByUsername(username)
@@ -75,12 +79,11 @@ public class DocServiceImpl implements DocService {
     @Transactional
     @Override
     public String deleteDoc(String id) {
+        if(!docAuthorizationService.fullAccess(id))
+            throw new UnauthorizedUserException("You are unauthorized");
+
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-//        for (User user : userRepository.findAll()) {
-//            List<AccessDoc> accessDoc = user.getAccessDoc();
-//            accessDoc.removeIf(accessDoc1 -> accessDoc1.getDoc().getId().equals(id));
-//            userRepository.save(user);
-//        }
+
         for (UserDoc userDoc : doc.getSharedWith()){
             userRepository.findByUsername(userDoc.getUser().getUsername()).stream()
                     .findFirst()
@@ -97,6 +100,8 @@ public class DocServiceImpl implements DocService {
     @Transactional
     @Override
     public String updateDocTitle(String id, DocTitleDTO title) {
+        if(!docAuthorizationService.canEdit(id))
+            throw new UnauthorizedUserException("You don't have permission to update this document");
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
         doc.setTitle(title.getTitle());
         docRepository.save(doc);
@@ -106,6 +111,8 @@ public class DocServiceImpl implements DocService {
     @Transactional
     @Override
     public UserDocDTO addUser(String id, UserDocDTO userDocDTO) {
+        if(!docAuthorizationService.canEdit(id))
+            throw new UnauthorizedUserException("You are unauthorized");
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
         UserDoc user = doc.getSharedWith().stream()
                 .filter(userDoc -> userDoc.getUser().getUsername().equals(userDocDTO.getUsername()))
@@ -143,6 +150,8 @@ public class DocServiceImpl implements DocService {
     @Transactional
     @Override
     public String removeUser(String id, UserDocDTO userDocDTO) {
+        if(!docAuthorizationService.canEdit(id))
+            throw new UnauthorizedUserException("You are unauthorized");
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
         if (doc.getSharedWith().isEmpty()) {
@@ -167,6 +176,8 @@ public class DocServiceImpl implements DocService {
     @Transactional
     @Override
     public String updatePermission(String id, UserDocDTO userDocDTO) {
+        if(!docAuthorizationService.fullAccess(id))
+            throw new UnauthorizedUserException("You are unauthorized");
         validatePermission(userDocDTO);
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
