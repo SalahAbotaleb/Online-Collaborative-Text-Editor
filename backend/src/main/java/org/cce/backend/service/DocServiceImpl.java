@@ -5,11 +5,14 @@ import org.cce.backend.entity.Doc;
 import org.cce.backend.dto.DocumentDTO;
 import org.cce.backend.entity.User;
 import org.cce.backend.entity.UserDoc;
+import org.cce.backend.exception.UserNotFoundException;
 import org.cce.backend.repository.DocRepository;
 import org.cce.backend.repository.UserRepository;
+import org.cce.backend.security.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,14 +30,10 @@ public class DocServiceImpl implements DocService {
     UserRepository userRepository;
 
     private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        if (principal instanceof UserDetails) {
-            String username = ((UserDetails) principal).getUsername();
-            return userRepository.findByUsername(username).get(0);
-        }
-
-        return null; // or throw an exception
+        String username = SecurityUtil.getCurrentUsername();
+        User user = userRepository.findByUsername(username)
+                .stream().findFirst().orElseThrow(()->new UserNotFoundException());
+        return user;
     }
 
     @Override
@@ -80,7 +79,7 @@ public class DocServiceImpl implements DocService {
                 .filter(userDoc -> userDoc.getUser().getId().equals(userDocDTO.getUser().getId()))
                 .findFirst()
                 .orElse(null);
-        if(user != null) {
+        if (user != null) {
             return UserDocDTO.builder()
                     .user(user.getUser())
                     .permission(user.getPermission())
@@ -91,7 +90,7 @@ public class DocServiceImpl implements DocService {
                 .permission(userDocDTO.getPermission())
                 .build();
 
-        if(doc.getSharedWith() == null) {
+        if (doc.getSharedWith() == null) {
             doc.setSharedWith(new ArrayList<>());
         }
 
@@ -103,7 +102,7 @@ public class DocServiceImpl implements DocService {
     @Override
     public DocumentDTO getSharedUsers(String id) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-        if(doc.getSharedWith() == null) {
+        if (doc.getSharedWith() == null) {
             return DocumentDTO.builder()
                     .id(doc.getId())
                     .owner(doc.getOwner())
@@ -129,7 +128,7 @@ public class DocServiceImpl implements DocService {
     public String removeUser(String id, UserDocDTO userDocDTO) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
-        if(doc.getSharedWith() == null) {
+        if (doc.getSharedWith() == null) {
             return "No users to remove";
         }
 
@@ -148,13 +147,13 @@ public class DocServiceImpl implements DocService {
         validatePermission(userDocDTO);
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
-        if(doc.getSharedWith() == null) {
+        if (doc.getSharedWith() == null) {
             return "No users to update";
         }
 
-        for(UserDoc userDoc : doc.getSharedWith()) {
+        for (UserDoc userDoc : doc.getSharedWith()) {
             User user = userDoc.getUser();
-            if(user != null && user.getId().equals(userDocDTO.getUser().getId())) {
+            if (user != null && user.getId().equals(userDocDTO.getUser().getId())) {
                 userDoc.setPermission(userDocDTO.getPermission());
             }
         }
@@ -166,9 +165,9 @@ public class DocServiceImpl implements DocService {
     @Override
     public Iterable<DocumentDTO> getAllDocs() {
         User user = getCurrentUser();
-        ArrayList <DocumentDTO> docs = new ArrayList<>();
+        ArrayList<DocumentDTO> docs = new ArrayList<>();
 
-        if(user == null) {
+        if (user == null) {
             throw new RuntimeException("User not found");
         }
         return docRepository.findByOwner(user).stream()
