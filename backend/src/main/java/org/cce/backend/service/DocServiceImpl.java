@@ -2,18 +2,28 @@ package org.cce.backend.service;
 
 import org.cce.backend.dto.DocTitleDTO;
 import org.cce.backend.dto.UserDocDTO;
+import org.cce.backend.entity.AccessDoc;
 import org.cce.backend.entity.Doc;
 import org.cce.backend.dto.DocumentDTO;
 import org.cce.backend.entity.User;
+import org.cce.backend.entity.UserDoc;
+import org.cce.backend.enums.Permission;
 import org.cce.backend.exception.UserNotFoundException;
 import org.cce.backend.mapper.DocumentMapper;
+import org.cce.backend.mapper.UserDocMapper;
 import org.cce.backend.mapper.UserMapper;
 import org.cce.backend.repository.DocRepository;
 import org.cce.backend.repository.UserRepository;
 import org.cce.backend.security.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -30,6 +40,9 @@ public class DocServiceImpl implements DocService {
     @Autowired
     DocumentMapper documentMapper;
 
+    @Autowired
+    UserDocMapper userDocMapper;
+
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
         User user = userRepository.findByUsername(username)
@@ -44,17 +57,39 @@ public class DocServiceImpl implements DocService {
         Doc doc = Doc.builder()
                 .owner(getCurrentUser())
                 .title(title)
+                .content("")
+                .sharedWith(new ArrayList<>())
                 .build();
 
         Doc savedDoc = docRepository.save(doc);
-
+        User user = getCurrentUser();
+        List<AccessDoc> accessDoc = user.getAccessDoc();
+        accessDoc.add(AccessDoc.builder()
+                .doc(savedDoc)
+                .permission(Permission.OWNER)
+                .build());
+        userRepository.save(user);
         return documentMapper.toDto(savedDoc);
     }
 
     @Transactional
     @Override
     public String deleteDoc(String id) {
-        docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//        for (User user : userRepository.findAll()) {
+//            List<AccessDoc> accessDoc = user.getAccessDoc();
+//            accessDoc.removeIf(accessDoc1 -> accessDoc1.getDoc().getId().equals(id));
+//            userRepository.save(user);
+//        }
+        for (UserDoc userDoc : doc.getSharedWith()){
+            userRepository.findByUsername(userDoc.getUser().getUsername()).stream()
+                    .findFirst()
+                    .ifPresent(user -> {
+                        List<AccessDoc> accessDoc = user.getAccessDoc();
+                        accessDoc.removeIf(accessDoc1 -> accessDoc1.getDoc().getId().equals(id));
+                        userRepository.save(user);
+                    });
+        }
         docRepository.deleteById(id);
         return id;
     }
@@ -73,51 +108,36 @@ public class DocServiceImpl implements DocService {
     public UserDocDTO addUser(String id, UserDocDTO userDocDTO) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
         UserDoc user = doc.getSharedWith().stream()
-                .filter(userDoc -> userDoc.getUser().getId().equals(userDocDTO.getUser().getId()))
+                .filter(userDoc -> userDoc.getUser().getUsername().equals(userDocDTO.getUsername()))
                 .findFirst()
                 .orElse(null);
-//        if (user != null) {
-//            return UserDocDTO.builder()
-//                    .user(user.getUser())
-//                    .permission(user.getPermission())
-//                    .build();
-//        }
-//        UserDoc sharedUser = UserDoc.builder()
-//                .user(userDocDTO.getUser())
-//                .permission(userDocDTO.getPermission())
-//                .build();
 
-        if (doc.getSharedWith() == null) {
-            doc.setSharedWith(new ArrayList<>());
+        if (user != null) {
+            return userDocMapper.toDto(user);
         }
 
+        List<User> users = userRepository.findByUsername(userDocDTO.getUsername());
+        if (users.isEmpty()) {
+            throw new UsernameNotFoundException("User not found");
+        }
+        User userFound = users.get(0);
+
+        UserDoc sharedUser = UserDoc.builder()
+                .user(userFound)
+                .permission(userDocDTO.getPermission())
+                .build();
         doc.getSharedWith().add(sharedUser);
         docRepository.save(doc);
         return userDocDTO;
     }
 
     @Override
-    public DocumentDTO getSharedUsers(String id) {
+    public List<UserDocDTO> getSharedUsers(String id) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-        if (doc.getSharedWith() == null) {
-            return DocumentDTO.builder()
-                    .id(doc.getId())
-                    .owner(doc.getOwner())
-                    .title(doc.getTitle())
-                    .content(doc.getContent())
-                    .sharedWith(new ArrayList<>())
-                    .build();
-        }
-//        for(UserDoc userDoc : doc.getSharedWith()) {
-//            sharedUsers.add(userDoc.getUser());
-//        }
-        return DocumentDTO.builder()
-                .id(doc.getId())
-                .owner(doc.getOwner())
-                .title(doc.getTitle())
-                .content(doc.getContent())
-                .sharedWith(doc.getSharedWith())
-                .build();
+
+        return doc.getSharedWith().stream()
+                .map(userDoc -> userDocMapper.toDto(userDoc))
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -125,17 +145,23 @@ public class DocServiceImpl implements DocService {
     public String removeUser(String id, UserDocDTO userDocDTO) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
-        if (doc.getSharedWith() == null) {
+        if (doc.getSharedWith().isEmpty()) {
             return "No users to remove";
         }
 
-
-        doc.getSharedWith().removeIf(userDoc -> {
+        String removedUserId = null;
+        for (Iterator<UserDoc> iterator = doc.getSharedWith().iterator(); iterator.hasNext();) {
+            UserDoc userDoc = iterator.next();
             User user = userDoc.getUser();
-            return user != null && user.getId().equals(userDocDTO.getUser().getId());
-        });
+            if (user != null && user.getUsername().equals(userDocDTO.getUsername()) && userDoc.getPermission().equals(userDocDTO.getPermission())) {
+                removedUserId = user.getId();
+                iterator.remove();
+                break;
+            }
+        }
+
         docRepository.save(doc);
-        return "User removed successfully";
+        return removedUserId != null ? "User with ID " + removedUserId + " removed successfully" : "User not found";
     }
 
     @Transactional
@@ -144,23 +170,21 @@ public class DocServiceImpl implements DocService {
         validatePermission(userDocDTO);
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
-        if (doc.getSharedWith() == null) {
-            return "No users to update";
-        }
 
-        for (UserDoc userDoc : doc.getSharedWith()) {
-            User user = userDoc.getUser();
-            if (user != null && user.getId().equals(userDocDTO.getUser().getId())) {
-                userDoc.setPermission(userDocDTO.getPermission());
-            }
-        }
+        UserDoc userDocToUpdate = doc.getSharedWith().stream()
+                .filter(userDoc -> userDoc.getUser().getUsername().equals(userDocDTO.getUsername()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("User not found in sharedWith list"));
+
+        userDocToUpdate.setPermission(userDocDTO.getPermission());
 
         docRepository.save(doc);
+
         return "User permission updated successfully";
     }
 
     @Override
-    public Iterable<DocumentDTO> getAllDocs() {
+    public List<DocumentDTO> getAllDocs() {
         User user = getCurrentUser();
         ArrayList<DocumentDTO> docs = new ArrayList<>();
 
@@ -168,13 +192,7 @@ public class DocServiceImpl implements DocService {
             throw new RuntimeException("User not found");
         }
         return docRepository.findByOwner(user).stream()
-                .map(doc -> DocumentDTO.builder()
-                        .id(doc.getId())
-                        .owner(doc.getOwner())
-                        .title(doc.getTitle())
-                        .content(doc.getContent())
-                        .sharedWith(doc.getSharedWith())
-                        .build())
+                .map(doc -> documentMapper.toDto(doc))
                 .collect(Collectors.toList());
     }
 

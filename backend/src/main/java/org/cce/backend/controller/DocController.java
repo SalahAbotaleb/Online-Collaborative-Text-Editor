@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/docs")
@@ -27,17 +29,17 @@ public class DocController {
     }
 
     @PatchMapping("/rename/{id}")
-    public String updateDocTitle(@PathVariable String id, @RequestBody DocTitleDTO docTitleDTO) {
+    public String updateDocTitle(@PathVariable String id,@RequestBody DocTitleDTO docTitleDTO) {
         return docService.updateDocTitle(id, docTitleDTO);
     }
 
     @PatchMapping("/users/add/{id}")
-    public UserDocDTO addUser(@PathVariable String id,@Valid @RequestBody UserDocDTO userDoc) {
+    public UserDocDTO addUser(@PathVariable String id,@RequestBody UserDocDTO userDoc) {
         return docService.addUser(id, userDoc);
     }
 
-    @GetMapping("/users/all/{id}")
-    public DocumentDTO getSharedUsers(@PathVariable String id) {
+    @GetMapping("/users/shared/{id}")
+    public List<UserDocDTO> getSharedUsers(@PathVariable String id) {
         return docService.getSharedUsers(id);
     }
 
@@ -52,15 +54,15 @@ public class DocController {
     }
 
     @GetMapping("/all")
-    public Iterable<DocumentDTO> getAllDocs() {
+    public List<DocumentDTO> getAllDocs() {
         return docService.getAllDocs();
     }
 
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        String errorMessage = ex.getBindingResult().getFieldError().getDefaultMessage();
-        return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        String errorMessage = ex.getBindingResult().getFieldError().getDefaultMessage();
+//        return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+//    }
 
 }

@@ -20,6 +20,6 @@ public class DocumentDTO {
     private String title;
     private String content;
 
-    private List<UserDoc> sharedWith;
+    private List<UserDocDTO> sharedWith;
 
 }
