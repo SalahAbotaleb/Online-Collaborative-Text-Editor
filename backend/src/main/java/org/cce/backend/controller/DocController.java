@@ -1,6 +1,7 @@
 package org.cce.backend.controller;
 
 import jakarta.validation.Valid;
+import org.cce.backend.dto.DocTitleDTO;
 import org.cce.backend.dto.UserDocDTO;
 import org.cce.backend.dto.DocumentDTO;
 import org.cce.backend.service.DocService;
@@ -17,8 +18,8 @@ public class DocController {
     @Autowired
     DocService docService;
     @PostMapping("/create")
-    public DocumentDTO createDoc(@RequestBody DocumentDTO documentDTO) {
-        return docService.createDoc(documentDTO);
+    public DocumentDTO createDoc(@RequestBody DocTitleDTO title) {
+        return docService.createDoc(title);
     }
     @DeleteMapping("/delete/{id}")
     public String deleteDoc(@PathVariable String id) {
@@ -26,8 +27,8 @@ public class DocController {
     }
 
     @PatchMapping("/rename/{id}")
-    public String updateDocTitle(@PathVariable String id, @RequestBody DocumentDTO documentDTO) {
-        return docService.updateDocTitle(id, documentDTO);
+    public String updateDocTitle(@PathVariable String id, @RequestBody DocTitleDTO docTitleDTO) {
+        return docService.updateDocTitle(id, docTitleDTO);
     }
 
     @PatchMapping("/users/add/{id}")

@@ -1,13 +1,14 @@
 package org.cce.backend.service;
 
+import org.cce.backend.dto.DocTitleDTO;
 import org.cce.backend.dto.UserDocDTO;
 import org.cce.backend.dto.DocumentDTO;
 
 
 public interface DocService {
-    DocumentDTO createDoc(DocumentDTO documentDTO);
+    DocumentDTO createDoc(DocTitleDTO title);
     String deleteDoc(String id);
-    String updateDocTitle(String id, DocumentDTO documentDTO);
+    String updateDocTitle(String id, DocTitleDTO documentDTO);
     UserDocDTO addUser(String id, UserDocDTO userDoc);
     DocumentDTO getSharedUsers(String id);
     String removeUser(String id, UserDocDTO userDoc);

@@ -1,24 +1,19 @@
 package org.cce.backend.service;
 
+import org.cce.backend.dto.DocTitleDTO;
 import org.cce.backend.dto.UserDocDTO;
 import org.cce.backend.entity.Doc;
 import org.cce.backend.dto.DocumentDTO;
 import org.cce.backend.entity.User;
-import org.cce.backend.entity.UserDoc;
 import org.cce.backend.exception.UserNotFoundException;
+import org.cce.backend.mapper.DocumentMapper;
+import org.cce.backend.mapper.UserMapper;
 import org.cce.backend.repository.DocRepository;
 import org.cce.backend.repository.UserRepository;
 import org.cce.backend.security.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 
 @Service
@@ -29,6 +24,12 @@ public class DocServiceImpl implements DocService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    UserMapper userMapper;
+
+    @Autowired
+    DocumentMapper documentMapper;
+
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
         User user = userRepository.findByUsername(username)
@@ -37,21 +38,17 @@ public class DocServiceImpl implements DocService {
     }
 
     @Override
-    public DocumentDTO createDoc(DocumentDTO documentDTO) {
+    public DocumentDTO createDoc(DocTitleDTO docTitleDTO) {
+        String title = docTitleDTO.getTitle();
+        userMapper.toDTO(getCurrentUser());
         Doc doc = Doc.builder()
                 .owner(getCurrentUser())
-                .title(documentDTO.getTitle())
-                .content(documentDTO.getContent())
+                .title(title)
                 .build();
 
         Doc savedDoc = docRepository.save(doc);
 
-        return DocumentDTO.builder()
-                .id(savedDoc.getId())
-                .owner(savedDoc.getOwner())
-                .title(savedDoc.getTitle())
-                .content(savedDoc.getContent())
-                .build();
+        return documentMapper.toDto(savedDoc);
     }
 
     @Transactional
@@ -64,9 +61,9 @@ public class DocServiceImpl implements DocService {
 
     @Transactional
     @Override
-    public String updateDocTitle(String id, DocumentDTO documentDTO) {
+    public String updateDocTitle(String id, DocTitleDTO title) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-        doc.setTitle(documentDTO.getTitle());
+        doc.setTitle(title.getTitle());
         docRepository.save(doc);
         return "Title updated successfully";
     }
@@ -79,16 +76,16 @@ public class DocServiceImpl implements DocService {
                 .filter(userDoc -> userDoc.getUser().getId().equals(userDocDTO.getUser().getId()))
                 .findFirst()
                 .orElse(null);
-        if (user != null) {
-            return UserDocDTO.builder()
-                    .user(user.getUser())
-                    .permission(user.getPermission())
-                    .build();
-        }
-        UserDoc sharedUser = UserDoc.builder()
-                .user(userDocDTO.getUser())
-                .permission(userDocDTO.getPermission())
-                .build();
+//        if (user != null) {
+//            return UserDocDTO.builder()
+//                    .user(user.getUser())
+//                    .permission(user.getPermission())
+//                    .build();
+//        }
+//        UserDoc sharedUser = UserDoc.builder()
+//                .user(userDocDTO.getUser())
+//                .permission(userDocDTO.getPermission())
+//                .build();
 
         if (doc.getSharedWith() == null) {
             doc.setSharedWith(new ArrayList<>());

@@ -16,7 +16,7 @@ import jakarta.validation.constraints.NotNull;
 public class UserDocDTO {
     @NotNull(message = "User is required")
     @JsonProperty(required = true)
-    private User user;
+    private String username;
     @NotNull(message = "Permission is required")
     @JsonProperty(required = true)
     private Permission permission;

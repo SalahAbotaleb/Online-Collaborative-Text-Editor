@@ -16,10 +16,8 @@ import java.util.List;
 @Builder
 public class DocumentDTO {
     private String id;
-    private User owner;
-    @JsonProperty(required = true)
+    private UserDTO owner;
     private String title;
-//    @JsonProperty(required = true)
     private String content;
 
     private List<UserDoc> sharedWith;

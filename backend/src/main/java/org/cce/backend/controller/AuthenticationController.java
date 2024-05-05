@@ -18,19 +18,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
+
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponseDTO> register(@RequestBody RegisterRequestDTO request){
+    public ResponseEntity<AuthenticationResponseDTO> register(@RequestBody RegisterRequestDTO request) {
         return ResponseEntity.ok(authenticationService.register(request));
     }
+
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponseDTO> register(@RequestBody AuthenticationRequestDTO request){
+    public ResponseEntity<AuthenticationResponseDTO> register(@RequestBody AuthenticationRequestDTO request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
 
     @GetMapping("/logout")
-    public void register(HttpServletRequest request){
+    public void register(HttpServletRequest request) {
         authenticationService.logout(request);
     }
-
 
 }
