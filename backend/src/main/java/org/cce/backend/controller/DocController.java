@@ -24,32 +24,32 @@ public class DocController {
         return docService.createDoc(title);
     }
     @DeleteMapping("/delete/{id}")
-    public String deleteDoc(@PathVariable String id) {
+    public Long deleteDoc(@PathVariable Long id) {
         return docService.deleteDoc(id);
     }
 
     @PatchMapping("/rename/{id}")
-    public String updateDocTitle(@PathVariable String id,@RequestBody DocTitleDTO docTitleDTO) {
+    public String updateDocTitle(@PathVariable Long id,@RequestBody DocTitleDTO docTitleDTO) {
         return docService.updateDocTitle(id, docTitleDTO);
     }
 
     @PatchMapping("/users/add/{id}")
-    public UserDocDTO addUser(@PathVariable String id,@RequestBody UserDocDTO userDoc) {
+    public UserDocDTO addUser(@PathVariable Long id,@RequestBody UserDocDTO userDoc) {
         return docService.addUser(id, userDoc);
     }
 
     @GetMapping("/users/shared/{id}")
-    public List<UserDocDTO> getSharedUsers(@PathVariable String id) {
+    public List<UserDocDTO> getSharedUsers(@PathVariable Long id) {
         return docService.getSharedUsers(id);
     }
 
     @DeleteMapping("/users/remove/{id}")
-    public String removeUser(@PathVariable String id, @RequestBody UserDocDTO userDoc) {
+    public String removeUser(@PathVariable Long id, @RequestBody UserDocDTO userDoc) {
         return docService.removeUser(id, userDoc);
     }
 
     @PatchMapping("users/permission/{id}")
-    public String updatePermission(@PathVariable String id, @RequestBody UserDocDTO userDoc) {
+    public String updatePermission(@PathVariable Long id, @RequestBody UserDocDTO userDoc) {
         return docService.updatePermission(id, userDoc);
     }
 

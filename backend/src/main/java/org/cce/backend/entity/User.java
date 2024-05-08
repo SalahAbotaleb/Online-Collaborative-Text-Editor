@@ -1,11 +1,8 @@
 package org.cce.backend.entity;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.*;
 import org.cce.backend.enums.Role;
-import jakarta.persistence.Entity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,11 +15,12 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Builder
+@Table(name="`user`")
 @Entity
 public class User implements UserDetails {
     @Id
-    @GeneratedValue
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String username;
     private String password;
     private String email;

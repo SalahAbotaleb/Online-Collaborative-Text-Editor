@@ -17,8 +17,8 @@ import java.util.List;
 @Entity
 public class Doc {
     @Id
-    @GeneratedValue
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @OneToOne
     private User owner;
     private String title;

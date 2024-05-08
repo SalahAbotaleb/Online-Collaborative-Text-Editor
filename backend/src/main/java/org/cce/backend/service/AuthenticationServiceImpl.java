@@ -35,7 +35,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setRole(Role.USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         validateUserNotExists(request);
-
+        System.out.println(user);
         userRepository.save(user);
         return generateJwt(user);
     }
@@ -98,6 +98,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .user(user)
                 .isValid(true)
                 .build();
+        System.out.println(token);
         tokenRepository.save(token);
         return AuthenticationResponseDTO.builder().token(jwtToken).build();
     }

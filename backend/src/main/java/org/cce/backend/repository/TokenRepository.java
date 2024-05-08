@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TokenRepository extends JpaRepository<Token,String> {
+public interface TokenRepository extends JpaRepository<Token,Long> {
     List<Token> findByTokenKey(String token);
 }
