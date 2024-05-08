@@ -54,10 +54,11 @@ public class DocServiceImpl implements DocService {
         return user;
     }
 
+    @Transactional
     @Override
     public DocumentDTO createDoc(DocTitleDTO docTitleDTO) {
         String title = docTitleDTO.getTitle();
-        userMapper.toDTO(getCurrentUser());
+//        userMapper.toDTO(getCurrentUser());
         Doc doc = Doc.builder()
                 .owner(getCurrentUser())
                 .title(title)
@@ -93,6 +94,10 @@ public class DocServiceImpl implements DocService {
                         userRepository.save(user);
                     });
         }
+        User user = getCurrentUser();
+        List<AccessDoc> accessDoc = user.getAccessDoc();
+        accessDoc.removeIf(accessDoc1 -> accessDoc1.getDoc().getId().equals(id));
+        userRepository.save(user);
         docRepository.deleteById(id);
         return id;
     }
@@ -194,6 +199,7 @@ public class DocServiceImpl implements DocService {
         return "User permission updated successfully";
     }
 
+    @Transactional
     @Override
     public List<DocumentDTO> getAllDocs() {
         User user = getCurrentUser();
