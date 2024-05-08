@@ -13,6 +13,7 @@ class item {
         this.left = left;
         this.right = right;
         this.content = content;
+        this.isdeleted = isdeleted;
     }
 }
 
@@ -35,6 +36,9 @@ export default function Edit() {
     const [counter, setCounter] = useState(0);
     const [input, setInput] = useState('');
     const [incomingId, setIncomingId] = useState('');
+    const [firstItem, setFirstItem] = useState(null);
+    const [left, setLeft] = useState('');
+    const [right, setRight] = useState('');
     // var editor;
 
     useEffect(() => {
@@ -44,25 +48,47 @@ export default function Edit() {
 
     return (<>
         <NavBar title={state}/>
+        <InputField value={left} setValue={setLeft} label='Left' type='text'/>
+        <InputField value={right} setValue={setRight} label='Right' type='text'/>
         <InputField value={incomingId} setValue={setIncomingId} label='Incoming ID' type='text'/>
         <InputField value={input} setValue={setInput} label='Title' type='text'/>
         <button onClick={() => {
             const incoming = {
-                id: incomingId, left: "2@m", right: "3@m", content: {insert: input}
+                id: incomingId, left: null, right: right, content: {insert: input}
             }
-            // TODO: check if left is deleted then set left to the left of left
-            // TODO: check if right is deleted then set right to the right of right
+            if (incoming.left === null) {
+                if (firstItem !== incoming.right && firstItem.split('@')[1] > incoming.id.split('@')[1]) {
+                    incoming.left = firstItem;
+                    console.log(incoming);
+                } else {
+                    incoming.right = firstItem;
+                    if (firstItem !== null)
+                        CRDT[firstItem].left = incoming.id;
+                    setFirstItem(incoming.id);
+
+                    CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
+
+                    const quillidx = ids.indexOf(incoming.left);
+                    quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content.insert), "silent");
+                    ids.splice(quillidx + 1, 0, incoming.id);
+                    console.log('here');
+                    return;
+                }
+            }
             while (CRDT[incoming.left].right !== incoming.right && CRDT[incoming.left].right.split('@')[1] > incoming.id.split('@')[1]) {
                 incoming.left = CRDT[incoming.left].right;
             }
             incoming.right = CRDT[incoming.left].right;
             CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
             CRDT[incoming.left].right = incoming.id;
-            CRDT[incoming.right].left = incoming.id;
-            console.log(CRDT);
+            if (incoming.right !== null)
+                CRDT[incoming.right].left = incoming.id;
 
+            while (CRDT[incoming.left].isdeleted) {
+                incoming.left = CRDT[incoming.left].left;
+            }
             const quillidx = ids.indexOf(incoming.left);
-            quillRef.current.getEditor().updateContents(new Delta().retain(quillidx).insert(incoming.content.insert), "silent");
+            quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content.insert), "silent");
             ids.splice(quillidx + 1, 0, incoming.id);
 
 
@@ -88,13 +114,27 @@ export default function Edit() {
                             const id = counter + "@m";
                             ids.splice(index, 0, id);
                             setCounter(counter + 1);
-                            CRDT[id] = new item(id, ids[index - 1], ids[index + 1], delta.ops[delta.ops.length - 1]);
-                            if (index > 0) CRDT[ids[index - 1]].right = id;
-                            if (index < ids.length - 1) CRDT[ids[index + 1]].left = id;
+                            let itm = new item(id, null, null, delta.ops[delta.ops.length - 1]);
+                            if (!index) {
+                                itm.left = null;
+                                itm.right = firstItem;
+                                if (firstItem !== null) {
+                                    CRDT[firstItem].left = id;
+                                }
+                                setFirstItem(id);
+                            } else {
+                                itm.left = ids[index - 1];
+                                if (CRDT[ids[index - 1]].right !== null) {
+                                    itm.right = CRDT[ids[index - 1]].right;
+                                    CRDT[CRDT[ids[index - 1]].right].left = id;
+                                }
+                                CRDT[ids[index - 1]].right = id;
+                            }
+                            CRDT[id] = itm;
                             console.log(CRDT);
                         }
                         if ('delete' in delta.ops[delta.ops.length - 1]) {
-                            const index = delta.ops[0].retain;
+                            const index = delta.ops[0].retain ? delta.ops[0].retain : 0;
                             const id = ids[index];
                             ids.splice(index, 1);
                             CRDT[id].isdeleted = true;

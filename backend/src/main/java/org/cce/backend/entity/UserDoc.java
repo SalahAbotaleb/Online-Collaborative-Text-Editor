@@ -14,8 +14,8 @@ import org.cce.backend.enums.Permission;
 @Entity
 public class UserDoc {
     @Id
-    @GeneratedValue
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
     private User user;

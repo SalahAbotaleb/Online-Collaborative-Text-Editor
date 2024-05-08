@@ -22,4 +22,9 @@ public class GlobalExceptionHandler {
         return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(runtimeException.getMessage());
     }
 
+    @ExceptionHandler(UnauthorizedUserException.class)
+    public ResponseEntity<String> handleUnauthorizedUserException(UnauthorizedUserException unauthorizedUserException){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(unauthorizedUserException.getMessage());
+    }
+
 }

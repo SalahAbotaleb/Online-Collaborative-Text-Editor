@@ -75,7 +75,7 @@ public class DocServiceImpl implements DocService {
 
     @Transactional
     @Override
-    public String deleteDoc(String id) {
+    public Long deleteDoc(Long id) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 //        for (User user : userRepository.findAll()) {
 //            List<AccessDoc> accessDoc = user.getAccessDoc();
@@ -97,7 +97,7 @@ public class DocServiceImpl implements DocService {
 
     @Transactional
     @Override
-    public String updateDocTitle(String id, DocTitleDTO title) {
+    public String updateDocTitle(Long id, DocTitleDTO title) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
         doc.setTitle(title.getTitle());
         docRepository.save(doc);
@@ -106,7 +106,7 @@ public class DocServiceImpl implements DocService {
 
     @Transactional
     @Override
-    public UserDocDTO addUser(String id, UserDocDTO userDocDTO) {
+    public UserDocDTO addUser(Long id, UserDocDTO userDocDTO) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
         UserDoc user = doc.getSharedWith().stream()
                 .filter(userDoc -> userDoc.getUser().getUsername().equals(userDocDTO.getUsername()))
@@ -133,7 +133,7 @@ public class DocServiceImpl implements DocService {
     }
 
     @Override
-    public List<UserDocDTO> getSharedUsers(String id) {
+    public List<UserDocDTO> getSharedUsers(Long id) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
         return doc.getSharedWith().stream()
@@ -143,14 +143,14 @@ public class DocServiceImpl implements DocService {
 
     @Transactional
     @Override
-    public String removeUser(String id, UserDocDTO userDocDTO) {
+    public String removeUser(Long id, UserDocDTO userDocDTO) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
         if (doc.getSharedWith().isEmpty()) {
             return "No users to remove";
         }
 
-        String removedUserId = null;
+        Long removedUserId = null;
         for (Iterator<UserDoc> iterator = doc.getSharedWith().iterator(); iterator.hasNext();) {
             UserDoc userDoc = iterator.next();
             User user = userDoc.getUser();
@@ -167,7 +167,7 @@ public class DocServiceImpl implements DocService {
 
     @Transactional
     @Override
-    public String updatePermission(String id, UserDocDTO userDocDTO) {
+    public String updatePermission(Long id, UserDocDTO userDocDTO) {
         validatePermission(userDocDTO);
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 

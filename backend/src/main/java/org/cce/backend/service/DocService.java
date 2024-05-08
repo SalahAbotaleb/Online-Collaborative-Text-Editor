@@ -9,11 +9,11 @@ import java.util.List;
 
 public interface DocService {
     DocumentDTO createDoc(DocTitleDTO title);
-    String deleteDoc(String id);
-    String updateDocTitle(String id, DocTitleDTO documentDTO);
-    UserDocDTO addUser(String id, UserDocDTO userDoc);
-    List<UserDocDTO> getSharedUsers(String id);
-    String removeUser(String id, UserDocDTO userDoc);
-    String updatePermission(String id, UserDocDTO userDoc);
+    Long deleteDoc(Long id);
+    String updateDocTitle(Long id, DocTitleDTO documentDTO);
+    UserDocDTO addUser(Long id, UserDocDTO userDoc);
+    List<UserDocDTO> getSharedUsers(Long id);
+    String removeUser(Long id, UserDocDTO userDoc);
+    String updatePermission(Long id, UserDocDTO userDoc);
     List<DocumentDTO> getAllDocs();
 }
