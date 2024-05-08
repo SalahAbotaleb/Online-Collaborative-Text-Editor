@@ -1,18 +1,27 @@
 package org.cce.backend.entity;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.cce.backend.enums.Permission;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
 public class UserDoc {
-    @DBRef
+    @Id
+    @GeneratedValue
+    private String id;
+
+    @ManyToOne
     private User user;
+
+    @ManyToOne
+    private Doc doc;
+
     private Permission permission;
 }

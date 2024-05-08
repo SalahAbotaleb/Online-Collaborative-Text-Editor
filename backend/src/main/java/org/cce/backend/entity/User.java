@@ -1,10 +1,11 @@
 package org.cce.backend.entity;
 
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.*;
 import org.cce.backend.enums.Role;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Entity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,18 +18,19 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Builder
-@Document
+@Entity
 public class User implements UserDetails {
     @Id
+    @GeneratedValue
     private String id;
-    @Indexed(unique = true)
     private String username;
     private String password;
     private String email;
     
     private Role role;
 
-    private List<AccessDoc> accessDoc = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<UserDoc> accessDoc;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -54,4 +56,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }

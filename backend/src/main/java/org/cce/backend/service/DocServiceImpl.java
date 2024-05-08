@@ -52,24 +52,25 @@ public class DocServiceImpl implements DocService {
 
     @Override
     public DocumentDTO createDoc(DocTitleDTO docTitleDTO) {
-        String title = docTitleDTO.getTitle();
-        userMapper.toDTO(getCurrentUser());
-        Doc doc = Doc.builder()
-                .owner(getCurrentUser())
-                .title(title)
-                .content("")
-                .sharedWith(new ArrayList<>())
-                .build();
-
-        Doc savedDoc = docRepository.save(doc);
-        User user = getCurrentUser();
-        List<AccessDoc> accessDoc = user.getAccessDoc();
-        accessDoc.add(AccessDoc.builder()
-                .doc(savedDoc)
-                .permission(Permission.OWNER)
-                .build());
-        userRepository.save(user);
-        return documentMapper.toDto(savedDoc);
+        return null;
+//        String title = docTitleDTO.getTitle();
+//        userMapper.toDTO(getCurrentUser());
+//        Doc doc = Doc.builder()
+//                .owner(getCurrentUser())
+//                .title(title)
+//                .content("")
+//                .sharedWith(new ArrayList<>())
+//                .build();
+//
+//        Doc savedDoc = docRepository.save(doc);
+//        User user = getCurrentUser();
+//        List<AccessDoc> accessDoc = user.getAccessDoc();
+//        accessDoc.add(AccessDoc.builder()
+//                .doc(savedDoc)
+//                .permission(Permission.OWNER)
+//                .build());
+//        userRepository.save(user);
+//        return documentMapper.toDto(savedDoc);
     }
 
     @Transactional
@@ -81,16 +82,16 @@ public class DocServiceImpl implements DocService {
 //            accessDoc.removeIf(accessDoc1 -> accessDoc1.getDoc().getId().equals(id));
 //            userRepository.save(user);
 //        }
-        for (UserDoc userDoc : doc.getSharedWith()){
-            userRepository.findByUsername(userDoc.getUser().getUsername()).stream()
-                    .findFirst()
-                    .ifPresent(user -> {
-                        List<AccessDoc> accessDoc = user.getAccessDoc();
-                        accessDoc.removeIf(accessDoc1 -> accessDoc1.getDoc().getId().equals(id));
-                        userRepository.save(user);
-                    });
-        }
-        docRepository.deleteById(id);
+//        for (UserDoc userDoc : doc.getSharedWith()){
+//            userRepository.findByUsername(userDoc.getUser().getUsername()).stream()
+//                    .findFirst()
+//                    .ifPresent(user -> {
+//                        List<AccessDoc> accessDoc = user.getAccessDoc();
+//                        accessDoc.removeIf(accessDoc1 -> accessDoc1.getDoc().getId().equals(id));
+//                        userRepository.save(user);
+//                    });
+//        }
+//        docRepository.deleteById(id);
         return id;
     }
 
@@ -185,15 +186,19 @@ public class DocServiceImpl implements DocService {
 
     @Override
     public List<DocumentDTO> getAllDocs() {
-        User user = getCurrentUser();
-        ArrayList<DocumentDTO> docs = new ArrayList<>();
-
-        if (user == null) {
-            throw new RuntimeException("User not found");
-        }
-        return docRepository.findByOwner(user).stream()
-                .map(doc -> documentMapper.toDto(doc))
-                .collect(Collectors.toList());
+//        String userId = SecurityUtil.getCurrentUserId();
+//        ArrayList<DocumentDTO> docs = new ArrayList<>();
+//
+//        if (userId == null) {
+//            throw new RuntimeException("User not found");
+//        }
+//        long prev = System.currentTimeMillis();
+//        var res = docRepository.findByOwnerId(userId).stream()
+//                .map(doc -> documentMapper.toDto(doc))
+//                .collect(Collectors.toList());
+//       long now = System.currentTimeMillis();
+//        System.out.println((now-prev));
+        return null;
     }
 
     private void validatePermission(UserDocDTO userDocDTO) {

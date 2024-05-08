@@ -2,6 +2,8 @@ package org.cce.backend.security;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 public class SecurityUtil {
     public static String getCurrentUsername(){
@@ -12,5 +14,10 @@ public class SecurityUtil {
             return username;
         }
         return "";
+    }
+
+        public static String getCurrentUserId(){
+        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+        return (String) servletRequestAttributes.getRequest().getAttribute("userId");
     }
 }
