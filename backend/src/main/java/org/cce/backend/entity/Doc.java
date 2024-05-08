@@ -1,13 +1,11 @@
 package org.cce.backend.entity;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,15 +14,16 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Document
+@Entity
 public class Doc {
     @Id
+    @GeneratedValue
     private String id;
-    @DBRef
-    @Indexed(unique = true)
+    @OneToOne
     private User owner;
     private String title;
     private String content;
-    private List<UserDoc> sharedWith = new ArrayList<>();
+    @OneToMany(mappedBy = "doc")
+    private List<UserDoc> sharedWith;
 
 }

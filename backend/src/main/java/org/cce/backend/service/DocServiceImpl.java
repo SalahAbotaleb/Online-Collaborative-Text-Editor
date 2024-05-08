@@ -202,15 +202,19 @@ public class DocServiceImpl implements DocService {
     @Transactional
     @Override
     public List<DocumentDTO> getAllDocs() {
-        User user = getCurrentUser();
-        ArrayList<DocumentDTO> docs = new ArrayList<>();
-
-        if (user == null) {
-            throw new RuntimeException("User not found");
-        }
-        return docRepository.findByOwner(user).stream()
-                .map(doc -> documentMapper.toDto(doc))
-                .collect(Collectors.toList());
+//        String userId = SecurityUtil.getCurrentUserId();
+//        ArrayList<DocumentDTO> docs = new ArrayList<>();
+//
+//        if (userId == null) {
+//            throw new RuntimeException("User not found");
+//        }
+//        long prev = System.currentTimeMillis();
+//        var res = docRepository.findByOwnerId(userId).stream()
+//                .map(doc -> documentMapper.toDto(doc))
+//                .collect(Collectors.toList());
+//       long now = System.currentTimeMillis();
+//        System.out.println((now-prev));
+        return null;
     }
 
     private void validatePermission(UserDocDTO userDocDTO) {
