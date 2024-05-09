@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class DocumentDTO {
-    private String id;
+    private Long id;
     private UserDTO owner;
     private String title;
     private String content;
