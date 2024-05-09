@@ -10,5 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class DocumentChangeDTO {
-    String msg;
+    String id;
+    String left;
+    String right;
+    String content;
+    boolean isdeleted;
 }
