@@ -22,11 +22,10 @@ public class UserIdFiler extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if(SecurityContextHolder.getContext().getAuthentication() != null){
             String username = SecurityUtil.getCurrentUsername();
-            User user = userRepository.findByUsername(username)
-                    .stream().findFirst()
+            User user = userRepository.findById(username)
                     .orElseThrow(()->new UsernameNotFoundException("Username "+username+" not found"));
-            request.setAttribute("userId",user.getId());
-            System.out.println("id "+user.getId());
+            request.setAttribute("userId",user.getUsername());
+            System.out.println("id "+user.getUsername());
         }
         filterChain.doFilter(request,response);
     }

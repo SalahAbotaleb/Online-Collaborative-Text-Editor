@@ -18,6 +18,6 @@ public class Token {
     Long id;
     Boolean isValid;
     String tokenKey;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     User user;
 }
