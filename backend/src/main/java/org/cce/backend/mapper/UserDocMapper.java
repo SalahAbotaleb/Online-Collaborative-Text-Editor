@@ -5,13 +5,11 @@ import org.cce.backend.entity.User;
 import org.cce.backend.entity.UserDoc;
 import org.cce.backend.repository.UserRepository;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring")
-public abstract class UserDocMapper {
-    public UserDocDTO toDto(UserDoc userDoc){
-        return UserDocDTO.builder()
-                .username(userDoc.getUser().getUsername())
-                .permission(userDoc.getPermission()).build();
-    }
+public interface UserDocMapper {
+    @Mapping(source = "user.username", target = "username")
+    public UserDocDTO userDocToUserDocDTO(UserDoc userDoc);
 }

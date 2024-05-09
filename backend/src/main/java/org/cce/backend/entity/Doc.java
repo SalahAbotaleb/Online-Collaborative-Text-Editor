@@ -19,7 +19,7 @@ public class Doc {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @OneToOne
+    @ManyToOne
     private User owner;
     private String title;
     private String content;

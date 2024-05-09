@@ -18,6 +18,6 @@ public class Token {
     Long id;
     Boolean isValid;
     String tokenKey;
-    @OneToOne
+    @ManyToOne
     User user;
 }
