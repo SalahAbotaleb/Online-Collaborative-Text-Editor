@@ -12,6 +12,5 @@ import org.springframework.data.annotation.Id;
 @Builder
 
 public class UserDTO {
-    private Long id;
     private String username;
 }

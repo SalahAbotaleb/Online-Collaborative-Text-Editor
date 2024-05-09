@@ -2,11 +2,8 @@ package org.cce.backend.service;
 
 import org.cce.backend.dto.DocTitleDTO;
 import org.cce.backend.dto.UserDocDTO;
-import org.cce.backend.entity.AccessDoc;
-import org.cce.backend.entity.Doc;
+import org.cce.backend.entity.*;
 import org.cce.backend.dto.DocumentDTO;
-import org.cce.backend.entity.User;
-import org.cce.backend.entity.UserDoc;
 import org.cce.backend.enums.Permission;
 import org.cce.backend.exception.UserNotFoundException;
 import org.cce.backend.mapper.DocumentMapper;
@@ -50,16 +47,18 @@ public class DocServiceImpl implements DocService {
 
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
-        User user = userRepository.findByUsername(username)
-                .stream().findFirst().orElseThrow(()->new UserNotFoundException());
+        User user = userRepository.findById(username)
+                .orElseThrow(()->new UserNotFoundException());
         return user;
     }
 
     @Transactional
     @Override
     public DocumentDTO createDoc(DocTitleDTO docTitleDTO) {
+        System.out.println("test");
         String title = docTitleDTO.getTitle();
         User user = getCurrentUser();
+        System.out.println("aftergetuser");
         Doc doc = Doc.builder()
                 .owner(user)
                 .title(title)
@@ -69,7 +68,7 @@ public class DocServiceImpl implements DocService {
 
         Doc savedDoc = docRepository.save(doc);
         userDocRepository.save(
-                UserDoc.builder().doc(savedDoc).user(user).permission(Permission.OWNER).build());
+                UserDoc.builder().doc(savedDoc).user(user).permission(Permission.OWNER).build() );
         userRepository.save(user);
         return documentMapper.toDto(savedDoc);
     }
@@ -104,13 +103,10 @@ public class DocServiceImpl implements DocService {
             return userDocMapper.userDocToUserDocDTO(user);
         }
 
-        List<User> users = userRepository.findByUsername(userDocDTO.getUsername());
-        if (users.isEmpty()) {
-            throw new UsernameNotFoundException("User not found");
-        }
-        User userFound = users.get(0);
+        User users = userRepository.findById(userDocDTO.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        UserDoc userDoc = UserDoc.builder().user(userFound)
+        UserDoc userDoc = UserDoc.builder().user(users)
                 .doc(doc).permission(userDocDTO.getPermission()).build();
         userDocRepository.save(userDoc);
         return userDocDTO;
@@ -134,19 +130,19 @@ public class DocServiceImpl implements DocService {
             return "No users to remove";
         }
 
-        Long removedUserId = null;
+        String removedUser = null;
         for (Iterator<UserDoc> iterator = doc.getSharedWith().iterator(); iterator.hasNext();) {
             UserDoc userDoc = iterator.next();
             User user = userDoc.getUser();
             if (user != null && user.getUsername().equals(userDocDTO.getUsername()) && userDoc.getPermission().equals(userDocDTO.getPermission())) {
-                removedUserId = user.getId();
+                removedUser = user.getUsername();
                 iterator.remove();
                 break;
             }
         }
 
         docRepository.save(doc);
-        return removedUserId != null ? "User with ID " + removedUserId + " removed successfully" : "User not found";
+        return removedUser != null ? "User with ID " + removedUser + " removed successfully" : "User not found";
     }
 
     @Transactional

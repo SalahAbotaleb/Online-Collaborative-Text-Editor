@@ -15,15 +15,18 @@ import org.hibernate.annotations.OnDeleteAction;
 @Builder
 @Entity
 public class UserDoc {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private UserDocId userDocId;
 
-    @ManyToOne
+    @MapsId("username")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "username", referencedColumnName = "username")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
-    @ManyToOne
+    @MapsId("docId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "docId", referencedColumnName = "id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Doc doc;
 
