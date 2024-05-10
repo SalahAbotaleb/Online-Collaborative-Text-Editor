@@ -16,7 +16,8 @@ public class DocWebSocketController {
     @MessageMapping("/change/{id}")
     public void greeting(@DestinationVariable String id, DocumentChangeDTO message){
         System.out.println(id);
-        messagingTemplate.convertAndSend("/docs/broadcast/changes/"+id,message.getMsg());
+        System.out.println(message);
+        messagingTemplate.convertAndSend("/docs/broadcast/changes/"+id,message);
     }
 
 }

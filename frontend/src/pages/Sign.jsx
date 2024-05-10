@@ -4,8 +4,7 @@ import {Transition} from '@headlessui/react';
 import {useNavigate} from "react-router-dom";
 import InputField from "../utils/InputField.jsx";
 
-export default function Sign() {
-    const [username, setUsername] = useState('');
+export default function Sign({username, setUsername}) {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [email, setEmail] = useState('');

@@ -4,6 +4,7 @@ import 'react-quill/dist/quill.snow.css';
 import {useState, useEffect, useRef} from 'react';
 import './editor.css'
 import {useParams, useLocation} from "react-router-dom";
+import {useSubscription, useStompClient} from "react-stomp-hooks";
 import InputField from "../../utils/InputField.jsx";
 import Delta from 'quill-delta';
 
@@ -25,13 +26,13 @@ const ids = [];
 const CRDT = {}
 // [1@m, 1@h, 2@m, 3@m]
 
-export default function Edit() {
+export default function Edit({username}) {
     const quillRef = useRef(null);
     const [value, setValue] = useState(quillRef.current?.getEditor().getContents());
     const [range, setRange] = useState();
     const [lastChange, setLastChange] = useState();
     const [test, setTest] = useState();
-    const {id} = useParams();
+    const {docId} = useParams();
     const {state} = useLocation();
     const [counter, setCounter] = useState(0);
     const [input, setInput] = useState('');
@@ -39,12 +40,53 @@ export default function Edit() {
     const [firstItem, setFirstItem] = useState(null);
     const [left, setLeft] = useState('');
     const [right, setRight] = useState('');
+    const [incomingItem, setIncomingItem] = useState(null);
     // var editor;
 
+    useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {setIncomingItem(JSON.parse(msg.body));});
+    const stompClient = useStompClient();
+    
     useEffect(() => {
-        // editor = quillRef.current.getEditor();
-        // editor.insertText(0, 'Hello, World!');
-    }, []);
+        if (incomingItem === null) return;
+        if (incomingItem.id in CRDT) return;
+        console.log(incomingItem);
+        const incoming = new item(incomingItem.id, incomingItem.left, incomingItem.right, incomingItem.content);
+        console.log(incoming);
+        if (incoming.left === null) {
+            if (firstItem !== incoming.right && firstItem.split('@')[1] > incoming.id.split('@')[1]) {
+                incoming.left = firstItem;
+                console.log(incoming);
+            } else {
+                incoming.right = firstItem;
+                if (firstItem !== null)
+                    CRDT[firstItem].left = incoming.id;
+                setFirstItem(incoming.id);
+
+                CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
+
+                const quillidx = ids.indexOf(incoming.left);
+                quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content), "silent");
+                ids.splice(quillidx + 1, 0, incoming.id);
+                console.log('here');
+                return;
+            }
+        }
+        while (CRDT[incoming.left].right !== incoming.right && CRDT[incoming.left].right.split('@')[1] > incoming.id.split('@')[1]) {
+            incoming.left = CRDT[incoming.left].right;
+        }
+        incoming.right = CRDT[incoming.left].right;
+        CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
+        CRDT[incoming.left].right = incoming.id;
+        if (incoming.right !== null)
+            CRDT[incoming.right].left = incoming.id;
+
+        while (CRDT[incoming.left].isdeleted) {
+            incoming.left = CRDT[incoming.left].left;
+        }
+        const quillidx = ids.indexOf(incoming.left);
+        quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content), "silent");
+        ids.splice(quillidx + 1, 0, incoming.id);
+    }, [incomingItem]);
 
     return (<>
         <NavBar title={state}/>
@@ -56,41 +98,6 @@ export default function Edit() {
             const incoming = {
                 id: incomingId, left: null, right: right, content: {insert: input}
             }
-            if (incoming.left === null) {
-                if (firstItem !== incoming.right && firstItem.split('@')[1] > incoming.id.split('@')[1]) {
-                    incoming.left = firstItem;
-                    console.log(incoming);
-                } else {
-                    incoming.right = firstItem;
-                    if (firstItem !== null)
-                        CRDT[firstItem].left = incoming.id;
-                    setFirstItem(incoming.id);
-
-                    CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
-
-                    const quillidx = ids.indexOf(incoming.left);
-                    quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content.insert), "silent");
-                    ids.splice(quillidx + 1, 0, incoming.id);
-                    console.log('here');
-                    return;
-                }
-            }
-            while (CRDT[incoming.left].right !== incoming.right && CRDT[incoming.left].right.split('@')[1] > incoming.id.split('@')[1]) {
-                incoming.left = CRDT[incoming.left].right;
-            }
-            incoming.right = CRDT[incoming.left].right;
-            CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
-            CRDT[incoming.left].right = incoming.id;
-            if (incoming.right !== null)
-                CRDT[incoming.right].left = incoming.id;
-
-            while (CRDT[incoming.left].isdeleted) {
-                incoming.left = CRDT[incoming.left].left;
-            }
-            const quillidx = ids.indexOf(incoming.left);
-            quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content.insert), "silent");
-            ids.splice(quillidx + 1, 0, incoming.id);
-
 
         }}
                 className="text-blue-600 bg-blue-500 mr-6 self-end px-4 py-2 mb-4 rounded-3xl hover:bg-slate-100"
@@ -111,10 +118,10 @@ export default function Edit() {
                         console.log(delta.ops);
                         if ('insert' in delta.ops[delta.ops.length - 1]) {
                             const index = delta.ops[0].retain;
-                            const id = counter + "@m";
+                            const id = counter + "@" + left;
                             ids.splice(index, 0, id);
                             setCounter(counter + 1);
-                            let itm = new item(id, null, null, delta.ops[delta.ops.length - 1]);
+                            let itm = new item(id, null, null, delta.ops[delta.ops.length - 1].insert);
                             if (!index) {
                                 itm.left = null;
                                 itm.right = firstItem;
@@ -132,6 +139,11 @@ export default function Edit() {
                             }
                             CRDT[id] = itm;
                             console.log(CRDT);
+
+                            stompClient.publish({
+                                destination: `/docs/change/${docId}`,
+                                body: JSON.stringify(itm)
+                            });
                         }
                         if ('delete' in delta.ops[delta.ops.length - 1]) {
                             const index = delta.ops[0].retain ? delta.ops[0].retain : 0;
