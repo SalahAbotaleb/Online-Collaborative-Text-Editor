@@ -45,10 +45,21 @@ export default function Edit({username}) {
 
     useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {setIncomingItem(JSON.parse(msg.body));});
     const stompClient = useStompClient();
-    
+
     useEffect(() => {
         if (incomingItem === null) return;
-        if (incomingItem.id in CRDT) return;
+        if (incomingItem.id.split('@')[1] === left) return;
+
+        console.log(incomingItem);
+        if (incomingItem.operation === 'delete') {
+            const index = ids.indexOf(incomingItem.id);
+            ids.splice(index, 1);
+            CRDT[incomingItem.id].isdeleted = true;
+            quillRef.current.getEditor().updateContents(new Delta().retain(index).delete(1), "silent");
+            console.log(CRDT);
+            return;
+        }
+
         console.log(incomingItem);
         const incoming = new item(incomingItem.id, incomingItem.left, incomingItem.right, incomingItem.content);
         console.log(incoming);
@@ -139,7 +150,6 @@ export default function Edit({username}) {
                             }
                             CRDT[id] = itm;
                             console.log(CRDT);
-
                             stompClient.publish({
                                 destination: `/docs/change/${docId}`,
                                 body: JSON.stringify(itm)
@@ -150,6 +160,11 @@ export default function Edit({username}) {
                             const id = ids[index];
                             ids.splice(index, 1);
                             CRDT[id].isdeleted = true;
+                            console.log({operation: "delete", id: id});
+                            stompClient.publish({
+                                destination: `/docs/change/${docId}`,
+                                body: JSON.stringify({operation: "delete", id: id})
+                            });
                             console.log(CRDT);
                         }
                         console.log(ids);
