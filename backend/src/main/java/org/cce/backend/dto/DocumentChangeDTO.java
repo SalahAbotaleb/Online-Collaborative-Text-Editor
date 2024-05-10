@@ -15,4 +15,5 @@ public class DocumentChangeDTO {
     String right;
     String content;
     boolean isdeleted;
+    String operation;
 }
