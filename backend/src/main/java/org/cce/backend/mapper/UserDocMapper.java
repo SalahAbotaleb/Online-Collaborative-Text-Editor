@@ -11,5 +11,5 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Mapper(componentModel = "spring")
 public interface UserDocMapper {
     @Mapping(source = "user.username", target = "username")
-    public UserDocDTO userDocToUserDocDTO(UserDoc userDoc);
+    UserDocDTO userDocToUserDocDTO(UserDoc userDoc);
 }
