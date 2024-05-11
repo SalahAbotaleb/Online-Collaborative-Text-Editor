@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 public class DocumentDTO {
     private Long id;
-    private UserDTO owner;
+    private String owner;
     private String title;
     private String content;
 

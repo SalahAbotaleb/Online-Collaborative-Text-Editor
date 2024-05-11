@@ -10,8 +10,7 @@ public class SecurityUtil {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (principal instanceof UserDetails) {
-            String username = ((UserDetails) principal).getUsername();
-            return username;
+            return ((UserDetails) principal).getUsername();
         }
         return "";
     }

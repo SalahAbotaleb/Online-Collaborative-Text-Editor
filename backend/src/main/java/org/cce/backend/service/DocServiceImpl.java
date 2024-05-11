@@ -48,9 +48,8 @@ public class DocServiceImpl implements DocService {
 
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
-        User user = userRepository.findById(username)
-                .orElseThrow(()->new UserNotFoundException());
-        return user;
+        return userRepository.findById(username)
+                .orElseThrow(UserNotFoundException::new);
     }
 
     @Transactional
@@ -68,9 +67,15 @@ public class DocServiceImpl implements DocService {
                 .build();
 
         Doc savedDoc = docRepository.save(doc);
-        userDocRepository.save(
-                UserDoc.builder().doc(savedDoc).user(user).permission(Permission.OWNER).build() );
-        userRepository.save(user);
+//        UserDocId userDocId = UserDocId.builder().docId(savedDoc.getId()).username(user.getUsername()).build();
+//        userDocRepository.save(
+//                UserDoc.builder()
+//                        .userDocId(userDocId)
+//                        .doc(savedDoc)
+//                        .user(user)
+//                        .permission(Permission.OWNER)
+//                        .build() );
+
         return documentMapper.toDto(savedDoc);
     }
 
@@ -95,19 +100,19 @@ public class DocServiceImpl implements DocService {
     @Override
     public UserDocDTO addUser(Long id, UserDocDTO userDocDTO) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-        UserDoc user = doc.getSharedWith().stream()
-                .filter(userDoc -> userDoc.getUser().getUsername().equals(userDocDTO.getUsername()))
-                .findFirst()
-                .orElse(null);
-
-        if (user != null) {
-            return userDocMapper.userDocToUserDocDTO(user);
-        }
-
-        User users = userRepository.findById(userDocDTO.getUsername())
+//        UserDoc user = doc.getSharedWith().stream()
+//                .filter(userDoc -> userDoc.getUser().getUsername().equals(userDocDTO.getUsername()))
+//                .findFirst()
+//                .orElse(null);
+//        if (user != null) {
+//            return userDocMapper.userDocToUserDocDTO(user);
+//        }
+        User user = userRepository.findById(userDocDTO.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
-        UserDoc userDoc = UserDoc.builder().user(users)
+        UserDocId userDocId = UserDocId.builder().docId(doc.getId()).username(user.getUsername()).build();
+        UserDoc userDoc = UserDoc.builder()
+                .userDocId(userDocId)
+                .user(user)
                 .doc(doc).permission(userDocDTO.getPermission()).build();
         userDocRepository.save(userDoc);
         return userDocDTO;
@@ -125,61 +130,71 @@ public class DocServiceImpl implements DocService {
     @Transactional
     @Override
     public String removeUser(Long id, UserDocDTO userDocDTO) {
-        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
 
-        if (doc.getSharedWith().isEmpty()) {
-            return "No users to remove";
-        }
+//        if (doc.getSharedWith().isEmpty()) {
+//            return "No users to remove";
+//        }
 
-        String removedUser = null;
-        for (Iterator<UserDoc> iterator = doc.getSharedWith().iterator(); iterator.hasNext();) {
-            UserDoc userDoc = iterator.next();
-            User user = userDoc.getUser();
-            if (user != null && user.getUsername().equals(userDocDTO.getUsername()) && userDoc.getPermission().equals(userDocDTO.getPermission())) {
-                removedUser = user.getUsername();
-                iterator.remove();
-                break;
-            }
-        }
+//        String removedUser = null;
+//        for (Iterator<UserDoc> iterator = doc.getSharedWith().iterator(); iterator.hasNext();) {
+//            UserDoc userDoc = iterator.next();
+//            User user = userDoc.getUser();
+//            if (user != null && user.getUsername().equals(userDocDTO.getUsername()) && userDoc.getPermission().equals(userDocDTO.getPermission())) {
+//                removedUser = user.getUsername();
+//                iterator.remove();
+//                userDocRepository.deleteById(userDoc.getUserDocId());
+//                break;
+//            }
+//        }
+        String username = SecurityUtil.getCurrentUsername();
 
-        docRepository.save(doc);
-        return removedUser != null ? "User with ID " + removedUser + " removed successfully" : "User not found";
+        int isDeleted = userDocRepository.deleteUserDocBy(userDocDTO.getUsername(), id, username);
+
+        //docRepository.save(doc);
+
+        return isDeleted != 0 ? "User removed successfully" : "User not found";
     }
 
     @Transactional
     @Override
     public String updatePermission(Long id, UserDocDTO userDocDTO) {
         validatePermission(userDocDTO);
-        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//
+//
+//        UserDoc userDocToUpdate = doc.getSharedWith().stream()
+//                .filter(userDoc -> userDoc.getUser().getUsername().equals(userDocDTO.getUsername()))
+//                .findFirst()
+//                .orElseThrow(() -> new RuntimeException("User not found in sharedWith list"));
+//
+//        userDocToUpdate.setPermission(userDocDTO.getPermission());
+//        UserDoc userDoc = userDocRepository.findById(UserDocId.builder().docId(id).username(userDocDTO.getUsername()).build())
+//                .orElseThrow(() -> new RuntimeException("User not found in sharedWith list"));
+//        userDoc.setPermission(userDocDTO.getPermission());
+//        userDocRepository.save(userDoc);
+        String username = SecurityUtil.getCurrentUsername();
+        int isUpdated = userDocRepository.updateUserDocBy(userDocDTO.getUsername(), id, username, userDocDTO.getPermission());
 
-
-        UserDoc userDocToUpdate = doc.getSharedWith().stream()
-                .filter(userDoc -> userDoc.getUser().getUsername().equals(userDocDTO.getUsername()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("User not found in sharedWith list"));
-
-        userDocToUpdate.setPermission(userDocDTO.getPermission());
-
-        docRepository.save(doc);
-
-        return "User permission updated successfully";
+        return isUpdated != 0 ? "User updated successfully" : "Failed to update";
     }
 
     @Transactional
     @Override
     public List<DocumentDTO> getAllDocs() {
-        User user = getCurrentUser();
-        System.out.println("New query");
-        List<Doc>docs = userDocRepository.getDocsByUser_Username(user.getUsername());
-        docs.stream().forEach(
-                        doc->{
-                            List<UserDoc> sharedWith = doc.getSharedWith();
-                            sharedWith = sharedWith.stream().filter(
-                                    item->!item.getPermission().equals(Permission.OWNER)
-                            ).toList();
-                            doc.setSharedWith(sharedWith);
-                        }
-                );
+//        User user = getCurrentUser();
+
+        String username = SecurityUtil.getCurrentUsername();
+        List<Doc> docs = docRepository.findByUsername(username);
+//        docs.stream().forEach(
+//                        doc->{
+//                            List<UserDoc> sharedWith = doc.getSharedWith();
+//                            sharedWith = sharedWith.stream().filter(
+//                                    item->!item.getPermission().equals(Permission.OWNER)
+//                            ).toList();
+//                            doc.setSharedWith(sharedWith);
+//                        }
+//                );
 
         return docs.stream().map(doc -> documentMapper.toDto(doc))
                 .collect(Collectors.toList());
