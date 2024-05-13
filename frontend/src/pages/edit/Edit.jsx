@@ -40,17 +40,15 @@ export default function Edit({username}) {
     const [firstItem, setFirstItem] = useState(null);
     const [left, setLeft] = useState('');
     const [right, setRight] = useState('');
-    const [incomingItem, setIncomingItem] = useState(null);
+    // const [incomingItem, setIncomingItem] = useState(null);
     // var editor;
 
-    useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {setIncomingItem(JSON.parse(msg.body));});
-    const stompClient = useStompClient();
-
-    useEffect(() => {
+    useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {
+        let incomingItem = JSON.parse(msg.body);
         if (incomingItem === null) return;
         if (incomingItem.id.split('@')[1] === left) return;
-
         console.log(incomingItem);
+        if (incomingItem.id.split('@')[1] === 'z') return;
         if (incomingItem.operation === 'delete') {
             const index = ids.indexOf(incomingItem.id);
             ids.splice(index, 1);
@@ -97,7 +95,13 @@ export default function Edit({username}) {
         const quillidx = ids.indexOf(incoming.left);
         quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content), "silent");
         ids.splice(quillidx + 1, 0, incoming.id);
-    }, [incomingItem]);
+    });
+    const stompClient = useStompClient();
+
+    // useEffect(() => {
+    //
+    //
+    // }, [incomingItem]);
 
     return (<>
         <NavBar title={state}/>

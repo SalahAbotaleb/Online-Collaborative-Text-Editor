@@ -17,7 +17,7 @@ function App() {
             <Route path="/" element={<Sign setUsername={setUsername} username={username}/>}/>
             <Route path="/view" element={<View/>}/>
             <Route path={'/edit/:docId'} element=
-                {<StompSessionProvider url={'ws://localhost:3000/docs/ws'}
+                {<StompSessionProvider url={'wss://docscrdt.azurewebsites.net/docs/ws'}
                                        connectHeaders={{"Authentication": `Bearer ${localStorage.getItem('token')}`}}
                                        debug={test => console.log(test)}>
                     <Edit username={username}/>
