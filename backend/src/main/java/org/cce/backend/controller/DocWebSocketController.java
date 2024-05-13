@@ -21,13 +21,14 @@ public class DocWebSocketController {
     public void greeting(@DestinationVariable String id, DocumentChangeDTO message){
         System.out.println(id);
         System.out.println(message);
-        if(message.getOperation()=="delete"){
+
+        if(message.getOperation().equals("delete")){
             crdt.delete(message.getId());
         }else{
             crdt.insert(message.getId(),new Item(message.getId()
                     ,message.getContent()
-                    ,crdt.getItem(message.getLeft()),
-                    crdt.getItem(message.getRight()),
+                    ,crdt.getItem(message.getRight()),
+                    crdt.getItem(message.getLeft()),
                     message.isDeleted()
                     ));
         }
