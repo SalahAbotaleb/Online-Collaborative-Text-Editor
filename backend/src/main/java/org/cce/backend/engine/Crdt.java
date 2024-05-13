@@ -24,7 +24,7 @@ public class Crdt {
                 System.out.println(item);
             } else {
                 item.right = firstItem;
-//                if (firstItem != null) firstItem.left = item;
+                if (firstItem != null) firstItem.left = item;
                 firstItem = item;
                 crdtMap.put(item.id, item);
                 System.out.println("here");

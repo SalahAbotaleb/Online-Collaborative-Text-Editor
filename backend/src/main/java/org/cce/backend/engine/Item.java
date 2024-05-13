@@ -3,8 +3,10 @@ package org.cce.backend.engine;
 import com.mongodb.lang.Nullable;
 
 import lombok.Builder;
+import lombok.Data;
 
 @Builder
+@Data
 public class Item {
     public String id;
     public String content;
