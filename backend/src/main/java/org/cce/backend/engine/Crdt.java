@@ -1,23 +1,30 @@
 package org.cce.backend.engine;
 
+import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 
-public class CRTD {
+@Component
+public class Crdt {
     private HashMap<String, Item> crdtMap;
     private Item firstItem;
 
-    public CRTD() {
+    public Crdt() {
         crdtMap = new HashMap<>();
     }
 
+    public Item getItem(String id){
+        return crdtMap.getOrDefault(id,null);
+    }
     public void insert(String key, Item item) {
         if (item.left == null) {
+            System.out.println(firstItem);
             if (firstItem != item.right && firstItem.id.split("@")[1].compareTo(item.id.split("@")[1]) > 0) {
                 item.left = firstItem;
                 System.out.println(item);
             } else {
                 item.right = firstItem;
-                if (firstItem != null) firstItem.left = item;
+//                if (firstItem != null) firstItem.left = item;
                 firstItem = item;
                 crdtMap.put(item.id, item);
                 System.out.println("here");

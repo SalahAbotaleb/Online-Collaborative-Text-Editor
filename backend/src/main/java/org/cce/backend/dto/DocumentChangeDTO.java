@@ -16,4 +16,8 @@ public class DocumentChangeDTO {
     String content;
     boolean isdeleted;
     String operation;
+
+    public boolean isDeleted(){
+        return isdeleted;
+    }
 }
