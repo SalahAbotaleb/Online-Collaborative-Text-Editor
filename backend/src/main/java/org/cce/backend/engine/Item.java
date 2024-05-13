@@ -2,8 +2,10 @@ package org.cce.backend.engine;
 
 
 import lombok.Builder;
+import lombok.Data;
 
 @Builder
+@Data
 public class Item {
     public String id;
     public String content;

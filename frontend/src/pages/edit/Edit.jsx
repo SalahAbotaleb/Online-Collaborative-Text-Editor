@@ -158,7 +158,7 @@ export default function Edit({username}) {
                             console.log(CRDT);
                             stompClient.publish({
                                 destination: `/docs/change/${docId}`,
-                                body: JSON.stringify(itm)
+                                body: JSON.stringify({...itm, operation: "insert"})
                             });
                         }
                         if ('delete' in delta.ops[delta.ops.length - 1]) {
