@@ -2,6 +2,8 @@ package org.cce.backend.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.cce.backend.dto.DocumentChangeDTO;
+import org.cce.backend.engine.Crdt;
+import org.cce.backend.engine.Item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -12,11 +14,24 @@ import org.springframework.stereotype.Controller;
 @RequiredArgsConstructor
 public class DocWebSocketController {
     @Autowired
+    Crdt crdt;
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @MessageMapping("/change/{id}")
     public void greeting(@DestinationVariable String id, DocumentChangeDTO message){
         System.out.println(id);
         System.out.println(message);
+        if(message.getOperation()=="delete"){
+            crdt.delete(message.getId());
+        }else{
+            crdt.insert(message.getId(),new Item(message.getId()
+                    ,message.getContent()
+                    ,crdt.getItem(message.getLeft()),
+                    crdt.getItem(message.getRight()),
+                    message.isDeleted()
+                    ));
+        }
+        System.out.println(crdt.toString());
         messagingTemplate.convertAndSend("/docs/broadcast/changes/"+id,message);
     }
 
