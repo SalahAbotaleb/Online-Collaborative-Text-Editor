@@ -46,10 +46,10 @@ export default function Edit({username}) {
     useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {
         let incomingItem = JSON.parse(msg.body);
         if (incomingItem === null) return;
-        if (incomingItem.id.split('@')[1] === left) return;
+
         console.log(incomingItem);
-        if (incomingItem.id.split('@')[1] === 'z') return;
         if (incomingItem.operation === 'delete') {
+            if (CRDT[incomingItem.id].isdeleted) return;
             const index = ids.indexOf(incomingItem.id);
             ids.splice(index, 1);
             CRDT[incomingItem.id].isdeleted = true;
@@ -57,6 +57,8 @@ export default function Edit({username}) {
             console.log(CRDT);
             return;
         }
+
+        if (incomingItem.id.split('@')[1] === left) return;
 
         console.log(incomingItem);
         const incoming = new item(incomingItem.id, incomingItem.left, incomingItem.right, incomingItem.content);
