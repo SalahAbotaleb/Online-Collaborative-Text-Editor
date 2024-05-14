@@ -2,7 +2,9 @@ package org.cce.backend.engine;
 
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Component
 public class Crdt {
@@ -61,6 +63,16 @@ public class Crdt {
             current = current.right;
         }
         return sb.toString();
+    }
+
+    public List<Item> getItems(){
+        List<Item> items = new ArrayList<>();
+        Item current = firstItem;
+        while (current != null) {
+                items.add(current);
+            current = current.right;
+        }
+        return items;
     }
 }
 

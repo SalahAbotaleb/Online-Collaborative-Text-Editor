@@ -1,7 +1,5 @@
 package org.cce.backend.engine;
 
-import com.mongodb.lang.Nullable;
-
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +9,6 @@ public class Item {
     public String id;
     public String content;
     public Item right;
-    @Nullable
     public Item left;
     public boolean isDeleted;
     public boolean isBold;
