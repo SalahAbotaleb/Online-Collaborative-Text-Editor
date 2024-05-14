@@ -14,9 +14,4 @@ public class SecurityUtil {
         }
         return "";
     }
-
-        public static Long getCurrentUserId(){
-        ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
-        return (Long) servletRequestAttributes.getRequest().getAttribute("userId");
-    }
 }

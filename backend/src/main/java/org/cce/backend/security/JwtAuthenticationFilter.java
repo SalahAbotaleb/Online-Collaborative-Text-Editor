@@ -36,10 +36,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        if(request.getCookies() == null){
+
+        String []url = request.getRequestURI().split("/");
+        String path = url[url.length-1];
+        if(request.getCookies() == null || path.equals("login") || path.equals("register")){
             filterChain.doFilter(request,response);
             return;
         }
+        System.out.println("generate");
         final Optional<Cookie> jwtCookie =
                 Arrays.stream(request.getCookies())
                         .filter(cookie->cookie.getName().equals(StringLiterals.JWT_TOKEN_KEY))
