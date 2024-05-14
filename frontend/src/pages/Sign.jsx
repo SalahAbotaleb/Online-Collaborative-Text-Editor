@@ -24,6 +24,10 @@ export default function Sign({username, setUsername}) {
                 }),
                 credentials: 'include',
             }).then(res => {
+                if (res.status !== 200) {
+                    alert('Username or Password is incorrect');
+                    return;
+                }
                 localStorage.setItem('username', username);
                 navigate('/view');
             }).catch(err => {
@@ -35,9 +39,14 @@ export default function Sign({username, setUsername}) {
                     'Content-Type': 'application/json'
                 }, body: JSON.stringify({
                     username, email, password
-                })
-            }).then(res => res.json()).then(data => {
-                localStorage.setItem('token', data.token);
+                }),
+                credentials: 'include',
+            }).then(res => {
+                if (res.status !== 200) {
+                    alert('Username or Email already exists');
+                    return;
+                }
+                localStorage.setItem('username', username);
                 navigate('/view');
             }).catch(err => {
                 console.log(err);
