@@ -53,7 +53,7 @@ public class WebSocketEventListener {
 
         List<String> usernames = docSessionParticipants.stream().map((sessionKey)->
         {
-            return socketSession.get(sessionId).getUsername();
+            return socketSession.get(sessionKey).getUsername();
         }).toList();
         activeUsers.setUsernames(usernames);
         System.out.println(activeUsers);

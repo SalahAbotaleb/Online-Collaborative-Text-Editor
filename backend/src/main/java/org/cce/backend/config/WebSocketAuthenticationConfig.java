@@ -50,6 +50,7 @@ public class WebSocketAuthenticationConfig implements WebSocketMessageBrokerConf
                     String jwtToken = authorizationHeader.substring(baerer.length());
                     System.out.println(jwtToken);
                     boolean isValid = jwtService.validateUserAndToken(jwtToken);
+                    System.out.println("is valid "+isValid);
                     if(!isValid){
                         throw new RuntimeException("Cannot access websocket, Unauthenticated");
                     }
