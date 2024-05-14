@@ -2,7 +2,6 @@ package org.cce.backend.repository;
 
 import jakarta.transaction.Transactional;
 import org.cce.backend.entity.Doc;
-import org.cce.backend.entity.Token;
 import org.cce.backend.entity.UserDoc;
 import org.cce.backend.entity.UserDocId;
 import org.cce.backend.enums.Permission;

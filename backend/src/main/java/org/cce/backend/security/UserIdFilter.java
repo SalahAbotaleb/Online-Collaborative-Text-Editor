@@ -15,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-public class UserIdFiler extends OncePerRequestFilter {
+public class UserIdFilter extends OncePerRequestFilter {
     @Autowired
     UserRepository userRepository;
     @Override
