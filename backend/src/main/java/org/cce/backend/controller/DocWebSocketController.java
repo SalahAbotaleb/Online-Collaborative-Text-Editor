@@ -17,23 +17,21 @@ public class DocWebSocketController {
     Crdt crdt;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
     @MessageMapping("/change/{id}")
-    public void greeting(@DestinationVariable String id, DocumentChangeDTO message){
+    public void greeting(@DestinationVariable String id, DocumentChangeDTO message) {
         System.out.println(id);
         System.out.println(message);
 
-        if(message.getOperation().equals("delete")){
+        if (message.getOperation().equals("delete")) {
             crdt.delete(message.getId());
-        }else{
-            crdt.insert(message.getId(),new Item(message.getId()
-                    ,message.getContent()
-                    ,crdt.getItem(message.getRight()),
-                    crdt.getItem(message.getLeft()),
-                    message.isDeleted()
-                    ));
+        } else if (message.getOperation().equals("insert")) {
+            crdt.insert(message.getId(), new Item(message.getId(), message.getContent(), crdt.getItem(message.getRight()), crdt.getItem(message.getLeft()), message.isDeleted(), message.isIsbold(), message.isIsitalic()));
+        } else {
+            crdt.format(message.getId(), message.isIsbold(), message.isIsitalic());
         }
         System.out.println(crdt.toString());
-        messagingTemplate.convertAndSend("/docs/broadcast/changes/"+id,message);
+        messagingTemplate.convertAndSend("/docs/broadcast/changes/" + id, message);
     }
 
 }
