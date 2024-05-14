@@ -15,9 +15,11 @@ export default function CreateDoc({open, setOpen, files, setFiles}) {
         fetch('http://localhost:3000/api/docs/create', {
             method: 'POST', headers: {
                 'Content-Type': 'application/json', "Authorization": `Bearer ${localStorage.getItem('token')} `
-            }, body: JSON.stringify({
+            },
+            body: JSON.stringify({
                 title: title
-            })
+            }),
+            credentials: 'include',
         }).then(res => res.json()).then(data => {
             setFiles(oldState => [data, ...oldState]);
         }).catch(err => {
