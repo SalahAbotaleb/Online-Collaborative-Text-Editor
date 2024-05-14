@@ -30,8 +30,7 @@ public class DocWebSocketController {
         } else {
             crdt.format(message.getId(), message.isIsbold(), message.isIsitalic());
         }
-        System.out.println(crdt.toString());
-        System.out.println("hnaaaa");
+        //System.out.println(crdt.toString());
 //        System.out.println(crdt.getItems());
         messagingTemplate.convertAndSend("/docs/broadcast/changes/" + id, message);
     }

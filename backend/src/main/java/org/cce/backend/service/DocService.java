@@ -16,4 +16,6 @@ public interface DocService {
     String removeUser(Long id, UserDocDTO userDoc);
     String updatePermission(Long id, UserDocDTO userDoc);
     List<DocumentDTO> getAllDocs();
+
+    DocumentDTO getDoc(Long id);
 }
