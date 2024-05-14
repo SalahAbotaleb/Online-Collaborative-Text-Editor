@@ -59,6 +59,7 @@ public class WebSocketEventListener {
         System.out.println(activeUsers);
         System.out.println(socketSession);
         System.out.println(docSessions);
+        messagingTemplate.convertAndSend("/docs/broadcast/usernames/"+docId,activeUsers);
     }
     @EventListener
     private void handleSessionDisconnect(SessionDisconnectEvent event) {
@@ -69,14 +70,22 @@ public class WebSocketEventListener {
         socketSession.remove(sessionId);
         if(sessionData == null) return;
         String docId = sessionData.getDocId();
-        List<String> sessions = docSessions.get(docId);
-        if(sessions==null) return;
-        sessions.remove(sessionId);
-        if(sessions.size()==0){
+        List<String> docSessionParticipants = docSessions.get(docId);
+        if(docSessionParticipants==null) return;
+        docSessionParticipants.remove(sessionId);
+        if(docSessionParticipants.size()==0){
             docSessions.remove(docId);
         }
+        ActiveUsers activeUsers = new ActiveUsers();
+
+        List<String> usernames = docSessionParticipants.stream().map((sessionKey)->
+        {
+            return socketSession.get(sessionKey).getUsername();
+        }).toList();
+        activeUsers.setUsernames(usernames);
         System.out.println(socketSession);
         System.out.println(docSessions);
+        messagingTemplate.convertAndSend("/docs/broadcast/usernames/"+docId,activeUsers);
 
     }
 
