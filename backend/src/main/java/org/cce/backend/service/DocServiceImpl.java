@@ -140,6 +140,13 @@ public class DocServiceImpl implements DocService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public DocumentDTO getDoc(Long id) {
+        Doc doc = docRepository.getDocById(id)
+                .orElseThrow(() -> new RuntimeException("Document not found"));
+        return documentMapper.toDto(doc);
+    }
+
     private void validatePermission(UserDocDTO userDocDTO) {
         int permission = userDocDTO.getPermission().ordinal();
         if (permission < 0 || permission > 2) {

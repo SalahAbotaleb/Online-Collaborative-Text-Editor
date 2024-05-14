@@ -27,13 +27,16 @@ public class DocWebSocketController {
         if (message.getOperation().equals("delete")) {
             crdt.delete(message.getId());
         } else if (message.getOperation().equals("insert")) {
-            crdt.insert(message.getId(), new Item(message.getId(), message.getContent(), crdt.getItem(message.getRight()), crdt.getItem(message.getLeft()), message.isDeleted(), message.isIsbold(), message.isIsitalic()));
+            crdt.insert(message.getId(),
+                    new Item(message.getId(), message.getContent(), crdt.getItem(message.getRight()),
+                            crdt.getItem(message.getLeft()), message.isDeleted(), message.isIsbold(),
+                            message.isIsitalic()));
         } else {
             crdt.format(message.getId(), message.isIsbold(), message.isIsitalic());
         }
-//        System.out.println(crdt.toString());
+        // System.out.println(crdt.toString());
         System.out.println("hnaaaa");
-//        System.out.println(crdt.getItems());
+        // System.out.println(crdt.getItems());
         messagingTemplate.convertAndSend("/docs/broadcast/changes/" + id, message);
     }
 
