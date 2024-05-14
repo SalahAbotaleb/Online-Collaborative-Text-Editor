@@ -27,7 +27,9 @@ public class Doc {
     private User owner;
 
     private String title;
-    private String content;
+    @Lob
+    @Column(name = "content", columnDefinition = "BLOB")
+    private byte[] content;
 
     @OneToMany(mappedBy = "doc")
     private List<UserDoc> sharedWith;

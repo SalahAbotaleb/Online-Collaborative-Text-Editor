@@ -1,12 +1,16 @@
 package org.cce.backend.service;
 
 import org.cce.backend.dto.DocTitleDTO;
+import org.cce.backend.dto.DocumentChangeDTO;
 import org.cce.backend.dto.UserDocDTO;
+import org.cce.backend.engine.Crdt;
+import org.cce.backend.engine.Item;
 import org.cce.backend.entity.*;
 import org.cce.backend.dto.DocumentDTO;
 import org.cce.backend.enums.Permission;
 import org.cce.backend.exception.UnauthorizedUserException;
 import org.cce.backend.exception.UserNotFoundException;
+import org.cce.backend.mapper.DocumentChangeMapper;
 import org.cce.backend.mapper.DocumentMapper;
 import org.cce.backend.mapper.UserDocMapper;
 import org.cce.backend.mapper.UserMapper;
@@ -19,7 +23,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,11 +51,38 @@ public class DocServiceImpl implements DocService {
     @Autowired
     UserDocRepository userDocRepository;
 
+    @Autowired
+    Crdt crdt;
+
+    @Autowired
+    DocumentChangeMapper documentChangeMapper;
+
 
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
         return userRepository.findById(username)
                 .orElseThrow(UserNotFoundException::new);
+    }
+
+    // Serialize the object to a byte array
+    private byte[] serializeObject(Object obj) {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             ObjectOutputStream out = new ObjectOutputStream(bos)) {
+            out.writeObject(obj);
+            return bos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to serialize object", e);
+        }
+    }
+
+    // Deserialize the byte array to an object
+    private Object deserializeObject(byte[] bytes) {
+        try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+             ObjectInputStream in = new ObjectInputStream(bis)) {
+            return in.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Failed to deserialize object", e);
+        }
     }
 
     @Transactional
@@ -62,7 +95,7 @@ public class DocServiceImpl implements DocService {
         Doc doc = Doc.builder()
                 .owner(user)
                 .title(title)
-                .content("")
+                .content(new byte[0])
                 .sharedWith(new ArrayList<>())
                 .build();
 
@@ -138,6 +171,38 @@ public class DocServiceImpl implements DocService {
         List<Doc> docs = docRepository.findByUsername(username);
         return docs.stream().map(doc -> documentMapper.toDto(doc))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    @Override
+    public List<DocumentChangeDTO> getDocChanges(Long id) {
+        byte[] content = serializeObject(crdt.getClearData());
+        System.out.println(Arrays.toString(content));
+        Object clearData = deserializeObject(content);
+        System.out.println(clearData);
+        return documentChangeMapper.toDto(crdt.getItems());
+    }
+
+    @Transactional
+    @Override
+    public void saveDoc(Long id) {
+        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+
+        byte[] content = serializeObject(crdt.getClearData());
+
+        doc.setContent(content);
+        docRepository.save(doc);
+        System.out.println(Arrays.toString(content));
+    }
+
+    @Transactional
+    @Override
+    public void loadDoc(Long id) {
+        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+        byte[] content = doc.getContent();
+        Object clearData = deserializeObject(content);
+        System.out.println(clearData);
+        //crdt.setClearData(clearData);
     }
 
     private void validatePermission(UserDocDTO userDocDTO) {

@@ -1,6 +1,7 @@
 package org.cce.backend.service;
 
 import org.cce.backend.dto.DocTitleDTO;
+import org.cce.backend.dto.DocumentChangeDTO;
 import org.cce.backend.dto.UserDocDTO;
 import org.cce.backend.dto.DocumentDTO;
 
@@ -16,4 +17,7 @@ public interface DocService {
     String removeUser(Long id, UserDocDTO userDoc);
     String updatePermission(Long id, UserDocDTO userDoc);
     List<DocumentDTO> getAllDocs();
+    List<DocumentChangeDTO> getDocChanges(Long id);
+    void saveDoc(Long id);
+    void loadDoc(Long id);
 }
