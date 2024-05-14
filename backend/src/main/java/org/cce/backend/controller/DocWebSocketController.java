@@ -32,7 +32,7 @@ public class DocWebSocketController {
         }
         System.out.println(crdt.toString());
         System.out.println("hnaaaa");
-        System.out.println(crdt.getItems());
+//        System.out.println(crdt.getItems());
         messagingTemplate.convertAndSend("/docs/broadcast/changes/" + id, message);
     }
 
