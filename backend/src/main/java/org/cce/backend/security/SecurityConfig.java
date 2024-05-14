@@ -17,7 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
-    private final UserIdFiler userIdFiler;
+    private final UserIdFilter userIdFiler;
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity

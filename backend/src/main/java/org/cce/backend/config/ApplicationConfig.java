@@ -24,17 +24,8 @@ public class ApplicationConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return (username) -> {
-            User user = userRepository.findById(username).orElseThrow(() -> new UsernameNotFoundException("User with username " + username + " not found"));
-
-            return new org.springframework.security.core.userdetails.User(
-                    user.getUsername(),
-                    user.getPassword(),
-                    List.of()
-            );
-//            return userRepository.findById(username);
-//                    .stream()
-//                    .findFirst()
-//                    .orElseThrow(()->new UsernameNotFoundException("User with username "+username+" not found"));
+            return userRepository
+                    .findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User with username " + username + " not found"));
         };
 
     }
@@ -46,12 +37,10 @@ public class ApplicationConfig {
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         return daoAuthenticationProvider;
     }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

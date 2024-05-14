@@ -23,7 +23,7 @@ public class Doc {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner", referencedColumnName = "username")
+    @JoinColumn(name = "username")
     private User owner;
 
     private String title;

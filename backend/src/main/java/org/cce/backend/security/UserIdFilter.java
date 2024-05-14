@@ -15,7 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-public class UserIdFiler extends OncePerRequestFilter {
+public class UserIdFilter extends OncePerRequestFilter {
     @Autowired
     UserRepository userRepository;
     @Override
@@ -25,7 +25,6 @@ public class UserIdFiler extends OncePerRequestFilter {
             User user = userRepository.findById(username)
                     .orElseThrow(()->new UsernameNotFoundException("Username "+username+" not found"));
             request.setAttribute("userId",user.getUsername());
-            System.out.println("id "+user.getUsername());
         }
         filterChain.doFilter(request,response);
     }
