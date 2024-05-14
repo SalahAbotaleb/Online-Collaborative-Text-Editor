@@ -4,8 +4,9 @@ package org.cce.backend.service;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.cce.backend.repository.TokenRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -19,17 +20,16 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private final String secretKey;
-    private final JwtParser parser;
+    @Value("${JWT_SECRET_KEY}")
+    private String secretKey;
+    private JwtParser parser;
 
-    @Autowired
-    private TokenRepository tokenRepository;
 
     @Autowired
     private UserDetailsService userDetailsService;
 
-    public JwtService() {
-        this.secretKey = "0a287a2e5c073eb8a7e049d914252e8ab1c4620bd8cba1b0ad594c3f7313ea8a";
+    @PostConstruct
+    public void initJwtService() {
         parser = Jwts.parser().setSigningKey(getSignInKey()).build();
     }
 
@@ -56,7 +56,7 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        int keyDuration = 24 * 60 * 60 * 1000;
+        int keyDuration =  60 * 60 * 1000;
         return Jwts.builder().setClaims(extraClaims).setSubject(userDetails.getUsername()).setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis() + keyDuration)).setHeaderParam("typ", "JWT").signWith(getSignInKey(), SignatureAlgorithm.HS256).compact();
 
     }
@@ -73,7 +73,7 @@ public class JwtService {
     public boolean isTokenValid(String token, UserDetails userDetails) {
         String username = extractUsername(token);
         boolean isTokenValid = username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-        return isTokenValid && tokenRepository.findByTokenKey(token).stream().findFirst().map(t -> t.getIsValid()).orElse(false);
+        return isTokenValid;
     }
 
     public boolean isTokenExpired(String token) {

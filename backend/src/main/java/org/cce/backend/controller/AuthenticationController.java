@@ -1,13 +1,16 @@
 package org.cce.backend.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.cce.backend.dto.AuthenticationRequestDTO;
 import org.cce.backend.dto.AuthenticationResponseDTO;
 import org.cce.backend.dto.RegisterRequestDTO;
-import org.cce.backend.entity.Token;
-import org.cce.backend.repository.TokenRepository;
 import org.cce.backend.service.AuthenticationService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,18 +23,22 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponseDTO> register(@RequestBody RegisterRequestDTO request) {
-        return ResponseEntity.ok(authenticationService.register(request));
+    public ResponseEntity<?> register(@RequestBody RegisterRequestDTO registerRequestDTO,HttpServletResponse response) {
+        authenticationService.register(registerRequestDTO,response);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponseDTO> register(@RequestBody AuthenticationRequestDTO request) {
-        return ResponseEntity.ok(authenticationService.authenticate(request));
+    public ResponseEntity<?> authenticateUser(@RequestBody AuthenticationRequestDTO request,HttpServletResponse response) {
+        authenticationService.authenticate(request,response);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/logout")
-    public void register(HttpServletRequest request) {
-        authenticationService.logout(request);
+    public ResponseEntity<String> register(HttpServletResponse response) {
+
+        authenticationService.logout(response);
+        return ResponseEntity.ok().build();
     }
 
 }
