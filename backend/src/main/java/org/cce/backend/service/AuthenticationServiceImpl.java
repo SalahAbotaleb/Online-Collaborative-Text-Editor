@@ -1,7 +1,6 @@
 package org.cce.backend.service;
 
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.cce.backend.dto.AuthenticationRequestDTO;
@@ -14,7 +13,6 @@ import org.cce.backend.repository.UserRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +31,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         validateUserNotExists(request);
         userRepository.save(user);
-        String jwtToken = generateJwt(user);
+        String jwtToken = generateJwt(user.getUsername());
         int jwtExpire = 60*60;
         setJWTCookie(response,jwtToken,jwtExpire);
     }
@@ -53,18 +51,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 )
         );
         String username = request.getUsername();
-        User user = userRepository.findByUsername(username)
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new UsernameNotFoundException("User with username " + username + " not found"));
-        String jwtToken = generateJwt(user);
+        String jwtToken = generateJwt(username);
         int jwtExpire = 60*60;
         setJWTCookie(response,jwtToken,jwtExpire);
     }
 
     @Override
     public void logout(HttpServletResponse response) {
-
         setJWTCookie(response,"",1);
     }
 
@@ -78,8 +71,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
 
-    private String generateJwt(User user) {
-        String jwtToken = jwtService.generateToken(user);
+    private String generateJwt(String username) {
+        String jwtToken = jwtService.generateToken(username);
         return jwtToken;
     }
 
