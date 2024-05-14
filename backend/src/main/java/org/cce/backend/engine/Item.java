@@ -1,6 +1,5 @@
 package org.cce.backend.engine;
 
-
 import lombok.Builder;
 import lombok.Data;
 
