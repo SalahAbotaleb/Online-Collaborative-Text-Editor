@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 public class Crdt {
@@ -20,14 +21,23 @@ public class Crdt {
     }
     public void insert(String key, Item item) {
         if (item.left == null) {
+            String firstItemId = firstItem == null ? null : firstItem.id;
+            String RightItemId = item.right == null ? null : item.right.id;
             System.out.println(firstItem);
-            if (firstItem != item.right && firstItem.id.split("@")[1].compareTo(item.id.split("@")[1]) > 0) {
+            System.out.println(firstItemId);
+            System.out.println(RightItemId);
+            if (!Objects.equals(firstItemId, RightItemId) && firstItem.id.split("@")[1].compareTo(item.id.split("@")[1]) > 0) {
+                System.out.println("here7");
                 item.left = firstItem;
                 System.out.println(item);
             } else {
+                System.out.println("here1");
                 item.right = firstItem;
+                System.out.println("here2");
                 if (firstItem != null) firstItem.left = item;
+                System.out.println("here3");
                 firstItem = item;
+                System.out.println("here4");
                 crdtMap.put(item.id, item);
                 System.out.println("here");
                 return;

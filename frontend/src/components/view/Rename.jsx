@@ -8,8 +8,9 @@ export default function Rename({open, setOpen, file, files, setFiles}) {
     function setName() {
         fetch(`http://localhost:3000/api/docs/rename/${file.id}`, {
             method: 'PATCH', headers: {
-                "Authorization": `Bearer ${localStorage.getItem('token')} `, 'Content-Type': 'application/json'
-            }, body: JSON.stringify({title: newName})
+               'Content-Type': 'application/json'
+            }, body: JSON.stringify({title: newName}),
+            credentials: 'include',
         }).then(() => {
             setFiles(oldState => oldState.map(f => f.id === file.id ? {...f, title: newName} : f));
         }).catch(err => {
