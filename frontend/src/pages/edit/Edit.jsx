@@ -1,12 +1,15 @@
 import NavBar from "../../components/NavBar/NavBar";
-import ReactQuill from 'react-quill';
+import ReactQuill, {Quill} from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import {useState, useEffect, useRef} from 'react';
+import {useState, useRef, useEffect} from 'react';
 import './editor.css'
 import {useParams, useLocation} from "react-router-dom";
 import {useSubscription, useStompClient} from "react-stomp-hooks";
 import InputField from "../../utils/InputField.jsx";
 import Delta from 'quill-delta';
+import QuillCursors from "quill-cursors";
+
+Quill.register('modules/cursors', QuillCursors);
 
 class item {
     constructor(id, left, right, content, isdeleted = false, isbold = false, isitalic = false) {
@@ -37,13 +40,41 @@ export default function Edit({username}) {
     const {docId} = useParams();
     const {state} = useLocation();
     const [counter, setCounter] = useState(0);
-    const [input, setInput] = useState('');
-    const [incomingId, setIncomingId] = useState('');
     const [firstItem, setFirstItem] = useState(null);
     const [left, setLeft] = useState('');
-    const [right, setRight] = useState('');
-    // const [incomingItem, setIncomingItem] = useState(null);
-    // var editor;
+    const [cursor, setCursor] = useState(null);
+
+    const stompClient = useStompClient();
+
+    useEffect(() => {
+        console.log(quillRef.current);
+        if (quillRef.current) {
+            setCursor(quillRef.current.getEditor().getModule('cursors'));
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!cursor) return;
+        cursor.createCursor("a", "moaaz", 'red');
+        cursor.createCursor("s", "salah", 'blue');
+    }, [cursor]);
+
+    useSubscription(`/docs/broadcast/usernames/${docId}`, (msg) => {
+        let incomingUsername = JSON.parse(msg.body);
+        if (incomingUsername === null) return;
+        console.log(incomingUsername);
+
+        const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+
+        cursor.createCursor(incomingUsername, incomingUsername, randomColor);
+    });
+
+    useSubscription(`/docs/broadcast/cursors/${docId}`, (msg) => {
+        let incomingCursor = JSON.parse(msg.body);
+        if (incomingCursor === null || incomingCursor.username === left) return;
+        console.log(incomingCursor);
+        cursor.moveCursor(incomingCursor.username, {index: incomingCursor.index, length: incomingCursor.length});
+    });
 
     useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {
         let incomingItem = JSON.parse(msg.body);
@@ -112,12 +143,6 @@ export default function Edit({username}) {
         quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content, attributes), "silent");
         ids.splice(quillidx + 1, 0, incoming.id);
     });
-    const stompClient = useStompClient();
-
-    // useEffect(() => {
-    //
-    //
-    // }, [incomingItem]);
 
     return (<>
         <NavBar title={state}/>
@@ -197,21 +222,6 @@ export default function Edit({username}) {
                                 }
                                 index += delta.ops[i].retain;
                             }
-
-                            // const casebold = delta.ops[delta.ops.length - 1].attributes.bold;
-                            // const caseitalic = delta.ops[delta.ops.length - 1].attributes.italic;
-                            //
-                            // for (let i = 0; i < letters; i++) {
-                            //     const id = ids[index + i];
-                            //     CRDT[id].isbold = casebold;
-                            //     CRDT[id].isitalic = caseitalic;
-                            //
-                            //     stompClient.publish({
-                            //         destination: `/docs/change/${docId}`,
-                            //         body: JSON.stringify({...CRDT[id], operation: "format"})
-                            //     });
-                            // }
-
                         }
 
                         console.log(ids);
@@ -219,9 +229,14 @@ export default function Edit({username}) {
                         setTest(value)
                         // console.log(delta.diff(newdelta))
                     }}
-                    onChangeSelection={setRange}
+                    onChangeSelection={(range, source, editor) => {
+                        stompClient.publish({
+                            destination: `/docs/cursor/${docId}`,
+                            body: JSON.stringify({username: left, index: range.index, length: range.length})
+                        });
+                    }}
                     modules={{
-                        toolbar: ['bold', 'italic']
+                        toolbar: ['bold', 'italic'], cursors: true
                     }}
                 />
                 <div>

@@ -14,6 +14,7 @@
     "@headlessui/react": "^1.7.19",
     "@mui/icons-material": "^5.15.15",
     "@mui/material": "^5.15.15",
+    "quill-cursors": "^4.0.2",
     "quill-delta": "^5.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
