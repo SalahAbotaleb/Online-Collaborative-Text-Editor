@@ -47,6 +47,12 @@ public class Crdt {
         item.isDeleted = true;
     }
 
+    public void format(String key, boolean bold, boolean italic) {
+        Item item = crdtMap.get(key);
+        item.isBold = bold;
+        item.isItalic = italic;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         Item current = firstItem;

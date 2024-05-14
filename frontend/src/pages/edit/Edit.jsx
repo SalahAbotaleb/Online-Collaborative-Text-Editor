@@ -9,12 +9,14 @@ import InputField from "../../utils/InputField.jsx";
 import Delta from 'quill-delta';
 
 class item {
-    constructor(id, left, right, content, isdeleted = false) {
+    constructor(id, left, right, content, isdeleted = false, isbold = false, isitalic = false) {
         this.id = id;
         this.left = left;
         this.right = right;
         this.content = content;
         this.isdeleted = isdeleted;
+        this.isbold = isbold;
+        this.isitalic = isitalic;
     }
 }
 
@@ -48,6 +50,16 @@ export default function Edit({username}) {
         if (incomingItem === null) return;
 
         console.log(incomingItem);
+        if (incomingItem.operation === 'format') {
+            CRDT[incomingItem.id].isbold = incomingItem.isbold;
+            CRDT[incomingItem.id].isitalic = incomingItem.isitalic;
+            const index = ids.indexOf(incomingItem.id);
+            let attributes = {};
+            attributes.bold = incomingItem.isbold;
+            attributes.italic = incomingItem.isitalic;
+            quillRef.current.getEditor().updateContents(new Delta().retain(index).retain(1, attributes), "silent");
+            return;
+        }
         if (incomingItem.operation === 'delete') {
             if (CRDT[incomingItem.id].isdeleted) return;
             const index = ids.indexOf(incomingItem.id);
@@ -61,7 +73,7 @@ export default function Edit({username}) {
         if (incomingItem.id.split('@')[1] === left) return;
 
         console.log(incomingItem);
-        const incoming = new item(incomingItem.id, incomingItem.left, incomingItem.right, incomingItem.content);
+        const incoming = new item(incomingItem.id, incomingItem.left, incomingItem.right, incomingItem.content, incomingItem.isdeleted, incomingItem.isbold, incomingItem.isitalic);
         console.log(incoming);
         if (incoming.left === null) {
             if (firstItem !== incoming.right && firstItem.split('@')[1] > incoming.id.split('@')[1]) {
@@ -69,8 +81,7 @@ export default function Edit({username}) {
                 console.log(incoming);
             } else {
                 incoming.right = firstItem;
-                if (firstItem !== null)
-                    CRDT[firstItem].left = incoming.id;
+                if (firstItem !== null) CRDT[firstItem].left = incoming.id;
                 setFirstItem(incoming.id);
 
                 CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
@@ -88,14 +99,17 @@ export default function Edit({username}) {
         incoming.right = CRDT[incoming.left].right;
         CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
         CRDT[incoming.left].right = incoming.id;
-        if (incoming.right !== null)
-            CRDT[incoming.right].left = incoming.id;
+        if (incoming.right !== null) CRDT[incoming.right].left = incoming.id;
 
         while (CRDT[incoming.left].isdeleted) {
             incoming.left = CRDT[incoming.left].left;
         }
         const quillidx = ids.indexOf(incoming.left);
-        quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content), "silent");
+        let attributes = {};
+        attributes.bold = incoming.isbold;
+        attributes.italic = incoming.isitalic;
+        console.log(attributes);
+        quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content, attributes), "silent");
         ids.splice(quillidx + 1, 0, incoming.id);
     });
     const stompClient = useStompClient();
@@ -108,18 +122,7 @@ export default function Edit({username}) {
     return (<>
         <NavBar title={state}/>
         <InputField value={left} setValue={setLeft} label='Left' type='text'/>
-        <InputField value={right} setValue={setRight} label='Right' type='text'/>
-        <InputField value={incomingId} setValue={setIncomingId} label='Incoming ID' type='text'/>
-        <InputField value={input} setValue={setInput} label='Title' type='text'/>
-        <button onClick={() => {
-            const incoming = {
-                id: incomingId, left: null, right: right, content: {insert: input}
-            }
 
-        }}
-                className="text-blue-600 bg-blue-500 mr-6 self-end px-4 py-2 mb-4 rounded-3xl hover:bg-slate-100"
-        >Save
-        </button>
         <div className="bg-[#f1f3f4] flex justify-center p-4 min-h-screen">
             <div className="w-10/12 lg:w-8/12 text-black bg-white">
                 <div id="toolbar" className='flex justify-center '>
@@ -154,14 +157,18 @@ export default function Edit({username}) {
                                 }
                                 CRDT[ids[index - 1]].right = id;
                             }
+                            if ('attributes' in delta.ops[delta.ops.length - 1]) {
+                                let attribute = delta.ops[delta.ops.length - 1].attributes;
+                                if ('bold' in attribute) itm.isbold = true;
+                                if ('italic' in attribute) itm.isitalic = true;
+                            }
                             CRDT[id] = itm;
                             console.log(CRDT);
                             stompClient.publish({
                                 destination: `/docs/change/${docId}`,
                                 body: JSON.stringify({...itm, operation: "insert"})
                             });
-                        }
-                        if ('delete' in delta.ops[delta.ops.length - 1]) {
+                        } else if ('delete' in delta.ops[delta.ops.length - 1]) {
                             const index = delta.ops[0].retain ? delta.ops[0].retain : 0;
                             const id = ids[index];
                             ids.splice(index, 1);
@@ -172,7 +179,41 @@ export default function Edit({username}) {
                                 body: JSON.stringify({operation: "delete", id: id})
                             });
                             console.log(CRDT);
+                        } else if ('retain' in delta.ops[delta.ops.length - 1]) {
+                            // const letters = delta.ops[delta.ops.length - 1].retain;
+                            let index = 0;
+                            for (let i = 0; i < delta.ops.length; i++) {
+                                if ('attributes' in delta.ops[i]) {
+                                    for (let j = 0; j < delta.ops[i].retain; j++) {
+                                        const id = ids[index + j];
+                                        CRDT[id].isbold = delta.ops[i].attributes.bold;
+                                        CRDT[id].isitalic = delta.ops[i].attributes.italic;
+
+                                        stompClient.publish({
+                                            destination: `/docs/change/${docId}`,
+                                            body: JSON.stringify({...CRDT[id], operation: "format"})
+                                        });
+                                    }
+                                }
+                                index += delta.ops[i].retain;
+                            }
+
+                            // const casebold = delta.ops[delta.ops.length - 1].attributes.bold;
+                            // const caseitalic = delta.ops[delta.ops.length - 1].attributes.italic;
+                            //
+                            // for (let i = 0; i < letters; i++) {
+                            //     const id = ids[index + i];
+                            //     CRDT[id].isbold = casebold;
+                            //     CRDT[id].isitalic = caseitalic;
+                            //
+                            //     stompClient.publish({
+                            //         destination: `/docs/change/${docId}`,
+                            //         body: JSON.stringify({...CRDT[id], operation: "format"})
+                            //     });
+                            // }
+
                         }
+
                         console.log(ids);
                         // console.log(newdelta)
                         setTest(value)
