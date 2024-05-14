@@ -74,6 +74,10 @@ public class DocController {
     public void loadDoc(@PathVariable Long id) {
         docService.loadDoc(id);
     }
+    @GetMapping("/{id}")
+    public DocumentDTO getDoc(@PathVariable Long id) {
+        return docService.getDoc(id);
+    }
 
 //    @ExceptionHandler(MethodArgumentNotValidException.class)
 //    public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {

@@ -14,14 +14,21 @@ export default function Sign({username, setUsername}) {
     function handleSubmit(e) {
         if (signingIn) {
             fetch('http://localhost:3000/api/auth/login', {
-                method: 'POST', headers: {
+                method: 'POST',
+                headers: {
                     'Content-Type': 'application/json'
-                }, body: JSON.stringify({
+                },
+                body: JSON.stringify({
                     "username": username,
                     "password": password
-                })
-            }).then(res => res.json()).then(data => {
-                localStorage.setItem('token', data.token);
+                }),
+                credentials: 'include',
+            }).then(res => {
+                if (res.status !== 200) {
+                    alert('Username or Password is incorrect');
+                    return;
+                }
+                localStorage.setItem('username', username);
                 navigate('/view');
             }).catch(err => {
                 console.log(err);
@@ -32,9 +39,14 @@ export default function Sign({username, setUsername}) {
                     'Content-Type': 'application/json'
                 }, body: JSON.stringify({
                     username, email, password
-                })
-            }).then(res => res.json()).then(data => {
-                localStorage.setItem('token', data.token);
+                }),
+                credentials: 'include',
+            }).then(res => {
+                if (res.status !== 200) {
+                    alert('Username or Email already exists');
+                    return;
+                }
+                localStorage.setItem('username', username);
                 navigate('/view');
             }).catch(err => {
                 console.log(err);

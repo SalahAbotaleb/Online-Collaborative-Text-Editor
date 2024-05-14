@@ -63,7 +63,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private void setJWTCookie(HttpServletResponse response, String token,int duration){
         Cookie cookie = new Cookie("jwtKey",token);
-        cookie.setHttpOnly(true);
+        cookie.setHttpOnly(false);
         cookie.setMaxAge(duration);
         cookie.setPath("/");
         HttpHeaders headers = new HttpHeaders();

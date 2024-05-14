@@ -31,7 +31,7 @@ const ids = [];
 const CRDT = {}
 // [1@m, 1@h, 2@m, 3@m]
 
-export default function Edit({username}) {
+export default function Edit() {
     const quillRef = useRef(null);
     const [value, setValue] = useState(quillRef.current?.getEditor().getContents());
     const [range, setRange] = useState();
@@ -43,6 +43,7 @@ export default function Edit({username}) {
     const [firstItem, setFirstItem] = useState(null);
     const [left, setLeft] = useState('');
     const [cursor, setCursor] = useState(null);
+    const [username] = useState(localStorage.getItem('username'));
 
     const stompClient = useStompClient();
 

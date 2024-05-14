@@ -1,6 +1,7 @@
 package org.cce.backend.config;
 
 import org.cce.backend.entity.UserDocSession;
+import org.cce.backend.security.StringLiterals;
 import org.cce.backend.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -13,9 +14,13 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
@@ -33,16 +38,26 @@ public class WebSocketAuthenticationConfig implements WebSocketMessageBrokerConf
                 final String baerer = "Baerer ";
                 StompHeaderAccessor accessor =
                         MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-
+                System.out.println("okkk");
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String authorizationHeader = accessor.getFirstNativeHeader("Authentication");
+//                    String cookieHeader = accessor.getFirstNativeHeader("Cookie");
+//                    String key = cookieHeader.split("=")[0];
+//                    String value = cookieHeader.split("=")[1];
+//                    if(key.equals(StringLiterals.JWT_TOKEN_KEY)){
+//                        System.out.println("JWT "+value);
+//                    }
                     String jwtToken = authorizationHeader.substring(baerer.length());
                     System.out.println(jwtToken);
                     boolean isValid = jwtService.validateUserAndToken(jwtToken);
+                    System.out.println("is valid "+isValid);
                     if(!isValid){
                         throw new RuntimeException("Cannot access websocket, Unauthenticated");
                     }
-                    System.out.println("isValid "+isValid);
+                    System.out.println(accessor.getDestination());
+                    String username = jwtService.extractUsername(jwtToken);
+                    UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(username,null,Collections.emptyList());
+                    accessor.setUser(user);
                 }
 
                 return message;
