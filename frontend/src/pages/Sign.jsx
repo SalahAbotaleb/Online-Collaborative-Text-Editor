@@ -4,7 +4,7 @@ import {Transition} from '@headlessui/react';
 import {useNavigate} from "react-router-dom";
 import InputField from "../utils/InputField.jsx";
 
-export default function Sign({username, setUsername}) {
+export default function Sign({username, setUsername, setLoggedin}) {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [email, setEmail] = useState('');
@@ -31,6 +31,8 @@ export default function Sign({username, setUsername}) {
                 localStorage.setItem('username', username);
                 const jwtKey = document.cookie.split(';').find(cookie => cookie.includes('jwt')).split('=')[1];
                 localStorage.setItem('jwtKey', jwtKey);
+                console.log(document.cookie.split(';'));
+                setLoggedin(true);
                 navigate('/view');
             }).catch(err => {
                 console.log(err);
