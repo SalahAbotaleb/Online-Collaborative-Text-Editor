@@ -23,21 +23,21 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequestDTO registerRequestDTO,HttpServletResponse response) {
-        authenticationService.register(registerRequestDTO,response);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> register(@RequestBody RegisterRequestDTO registerRequestDTO) {
+        AuthenticationResponseDTO token=authenticationService.register(registerRequestDTO);
+        return ResponseEntity.ok().body(token);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody AuthenticationRequestDTO request,HttpServletResponse response) {
-        authenticationService.authenticate(request,response);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> authenticateUser(@RequestBody AuthenticationRequestDTO request) {
+        AuthenticationResponseDTO token=authenticationService.authenticate(request);
+        return ResponseEntity.ok().body(token);
     }
 
     @GetMapping("/logout")
     public ResponseEntity<String> register(HttpServletResponse response) {
 
-        authenticationService.logout(response);
+        authenticationService.logout();
         return ResponseEntity.ok().build();
     }
 

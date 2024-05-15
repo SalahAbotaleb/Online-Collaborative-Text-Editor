@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.cce.backend.dto.AuthenticationRequestDTO;
+import org.cce.backend.dto.AuthenticationResponseDTO;
 import org.cce.backend.dto.RegisterRequestDTO;
 import org.cce.backend.entity.User;
 import org.cce.backend.enums.Role;
@@ -25,7 +26,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final RegisterRequestDTOUserMapper registerRequestDTOUserMapper;
 
-    public void register(RegisterRequestDTO request, HttpServletResponse response) {
+    public AuthenticationResponseDTO register(RegisterRequestDTO request) {
         User user = registerRequestDTOUserMapper.RegisterRequestDTOToUser(request);
         user.setRole(Role.USER);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -33,7 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
         String jwtToken = generateJwt(user.getUsername());
         int jwtExpire = 60*60;
-        setJWTCookie(response,jwtToken,jwtExpire);
+        return setJWTCookie(jwtToken,jwtExpire);
     }
 
     private void validateUserNotExists(RegisterRequestDTO request) {
@@ -43,7 +44,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 });
     }
 
-    public void authenticate(AuthenticationRequestDTO request,HttpServletResponse response) {
+    public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -53,21 +54,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String username = request.getUsername();
         String jwtToken = generateJwt(username);
         int jwtExpire = 60*60;
-        setJWTCookie(response,jwtToken,jwtExpire);
+        return setJWTCookie(jwtToken,jwtExpire);
     }
 
     @Override
-    public void logout(HttpServletResponse response) {
-        setJWTCookie(response,"",1);
+    public void logout() {
+
     }
 
-    private void setJWTCookie(HttpServletResponse response, String token,int duration){
-        Cookie cookie = new Cookie("jwtKey",token);
-        cookie.setHttpOnly(false);
-        cookie.setMaxAge(duration);
-        cookie.setPath("/");
-        HttpHeaders headers = new HttpHeaders();
-        response.addCookie(cookie);
+    private AuthenticationResponseDTO setJWTCookie(String token, int duration){
+        String bearerToken = "Bearer "+token;
+        return AuthenticationResponseDTO.builder().token(bearerToken).build();
     }
 
 

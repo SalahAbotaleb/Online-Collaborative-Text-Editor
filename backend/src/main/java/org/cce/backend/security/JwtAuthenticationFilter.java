@@ -39,22 +39,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String []url = request.getRequestURI().split("/");
         String path = url[url.length-1];
-        if(request.getCookies() == null || path.equals("login") || path.equals("register")){
+        if(path.equals("login") || path.equals("register")){
             filterChain.doFilter(request,response);
             return;
         }
         System.out.println("generate");
-        final Optional<Cookie> jwtCookie =
-                Arrays.stream(request.getCookies())
-                        .filter(cookie->cookie.getName().equals(StringLiterals.JWT_TOKEN_KEY))
-                        .findFirst();
         final String jwt;
         final String username;
-        if(jwtCookie.isEmpty()){
+        final String header = request.getHeader("Authorization");
+        if(header == null ||!header.startsWith("Bearer ")){
             filterChain.doFilter(request,response);
             return;
         }
-        jwt = jwtCookie.get().getValue();
+        final int tokenStart = "Bearer ".length();
+        jwt = header.substring(tokenStart);
+
         username = jwtService.extractUsername(jwt);
         if(username!=null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);

@@ -7,7 +7,7 @@ import org.cce.backend.dto.AuthenticationResponseDTO;
 import org.cce.backend.dto.RegisterRequestDTO;
 
 public interface AuthenticationService {
-    public void register(RegisterRequestDTO request, HttpServletResponse response);
-    public void authenticate(AuthenticationRequestDTO request, HttpServletResponse response);
-    public void logout(HttpServletResponse response);
+    public AuthenticationResponseDTO register(RegisterRequestDTO requestAuthenticationResponseDTO);
+    public AuthenticationResponseDTO authenticate(AuthenticationRequestDTO request);
+    public void logout();
 }
