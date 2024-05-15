@@ -41,12 +41,6 @@ public class WebSocketAuthenticationConfig implements WebSocketMessageBrokerConf
                 System.out.println("okkk");
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String authorizationHeader = accessor.getFirstNativeHeader("Authentication");
-//                    String cookieHeader = accessor.getFirstNativeHeader("Cookie");
-//                    String key = cookieHeader.split("=")[0];
-//                    String value = cookieHeader.split("=")[1];
-//                    if(key.equals(StringLiterals.JWT_TOKEN_KEY)){
-//                        System.out.println("JWT "+value);
-//                    }
                     String jwtToken = authorizationHeader.substring(baerer.length());
                     System.out.println(jwtToken);
                     boolean isValid = jwtService.validateUserAndToken(jwtToken);
