@@ -10,7 +10,7 @@ import {useEffect, useState} from "react";
 function App() {
 
     const [username, setUsername] = useState('');
-    const [jwtKey, setJwtKey] = useState('');
+    // const [jwtKey, setJwtKey] = useState('');
 
 
     // useEffect(() => {
@@ -24,11 +24,11 @@ function App() {
     return (<BrowserRouter>
         <ScrollToTop/>
         <Routes>
-            <Route path="/" element={<Sign setUsername={setUsername} username={username} setJwtKey={setJwtKey}/>}/>
+            <Route path="/" element={<Sign setUsername={setUsername} username={username}/>}/>
             <Route path="/view" element={<View />}/>
             <Route path={'/edit/:docId'} element=
                 {<StompSessionProvider url={'ws://localhost:3000/docs/ws'}
-                                       connectHeaders={{"Authentication": `Bearer ${jwtKey}`}}
+                                       connectHeaders={{"Authentication": `Bearer ${localStorage.getItem('jwtKey')}`}}
                                        debug={test => console.log(test)}>
                     <Edit username={username}/>
                 </StompSessionProvider>}/>

@@ -21,6 +21,7 @@ export default function NavBar({title, signedin, setsignedin}) {
                             credentials: 'include',
                         }).then(res => {
                             localStorage.removeItem('username');
+                            localStorage.removeItem('jwtKey');
                             navigate('/');
                         }).catch(err => {
                             console.log(err);

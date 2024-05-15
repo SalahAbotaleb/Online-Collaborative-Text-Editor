@@ -230,7 +230,7 @@ export default function Edit() {
             <img src={loadingGif} className="m-auto"/>
         </div>}
         {!loading && <>
-            <NavBar title={state}/>
+            <NavBar title={state} signedin={loading} setsignedin={setLoading}/>
 
             <div className="bg-[#f1f3f4] flex justify-center p-4 min-h-screen">
                 <div className="w-10/12 lg:w-8/12 text-black bg-white">
