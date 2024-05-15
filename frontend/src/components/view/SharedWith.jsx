@@ -1,8 +1,8 @@
-import {Fragment} from "react";
-import {Dialog, Listbox, Transition} from "@headlessui/react";
+import { Fragment } from "react";
+import { Dialog, Listbox, Transition } from "@headlessui/react";
 import ClearRoundedIcon from '@mui/icons-material/ClearRounded';
 
-export default function SharedWith({open, setOpen, shares, docId, setFiles, isViewer}) {
+export default function SharedWith({ open, setOpen, shares, docId, setFiles, isViewer }) {
     return <Transition appear show={open} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={() => setOpen(false)}>
             <Transition.Child
@@ -14,7 +14,7 @@ export default function SharedWith({open, setOpen, shares, docId, setFiles, isVi
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div className="fixed inset-0 bg-black/25"/>
+                <div className="fixed inset-0 bg-black/25" />
             </Transition.Child>
 
             <div className="fixed inset-0 overflow-y-auto">
@@ -46,6 +46,7 @@ export default function SharedWith({open, setOpen, shares, docId, setFiles, isVi
                                                 fetch(`http://localhost:3000/api/docs/users/remove/${docId}`, {
                                                     method: 'DELETE', headers: {
                                                         'Content-Type': 'application/json',
+                                                        "Authorization": `Bearer ${localStorage.getItem('jwtKey')}`
                                                     }, body: JSON.stringify({
                                                         username: share.username, permission: share.permission
                                                     }), credentials: 'include'
@@ -63,8 +64,8 @@ export default function SharedWith({open, setOpen, shares, docId, setFiles, isVi
                                                     console.log(err);
                                                 })
                                             }}
-                                                    className='bg-white rounded-2xl w-5 h-5 flex items-center justify-center'>
-                                                <ClearRoundedIcon sx={{color: '#5f6368', fontSize: '15px'}}/>
+                                                className='bg-white rounded-2xl w-5 h-5 flex items-center justify-center'>
+                                                <ClearRoundedIcon sx={{ color: '#5f6368', fontSize: '15px' }} />
                                             </button>}
                                         </div>
                                     </div>

@@ -1,8 +1,8 @@
-import {Dialog, Transition} from '@headlessui/react'
-import {Fragment, useState} from 'react'
+import { Dialog, Transition } from '@headlessui/react'
+import { Fragment, useState } from 'react'
 import InputField from "../../utils/InputField.jsx";
 
-export default function CreateDoc({open, setOpen, files, setFiles}) {
+export default function CreateDoc({ open, setOpen, files, setFiles }) {
     const [title, setTitle] = useState('')
 
 
@@ -14,7 +14,7 @@ export default function CreateDoc({open, setOpen, files, setFiles}) {
     function createFile() {
         fetch('http://localhost:3000/api/docs/create', {
             method: 'POST', headers: {
-                'Content-Type': 'application/json', "Authorization": `Bearer ${localStorage.getItem('token')} `
+                'Content-Type': 'application/json', "Authorization": `Bearer ${localStorage.getItem('jwtKey')}`
             },
             body: JSON.stringify({
                 title: title
@@ -39,7 +39,7 @@ export default function CreateDoc({open, setOpen, files, setFiles}) {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div className="fixed inset-0 bg-black/25"/>
+                <div className="fixed inset-0 bg-black/25" />
             </Transition.Child>
 
             <div className="fixed inset-0 overflow-y-auto">
@@ -65,7 +65,7 @@ export default function CreateDoc({open, setOpen, files, setFiles}) {
                                 <p className="text-sm text-gray-500">
                                     Create a new document
                                 </p>
-                                <InputField value={title} setValue={setTitle} label='Title' type='text'/>
+                                <InputField value={title} setValue={setTitle} label='Title' type='text' />
 
                             </div>
                             <div className="mt-4 flex w-full justify-end">

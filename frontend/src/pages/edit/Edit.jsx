@@ -1,10 +1,10 @@
 import NavBar from "../../components/NavBar/NavBar";
-import ReactQuill, {Quill} from 'react-quill';
+import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import {useState, useRef, useEffect} from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './editor.css'
-import {useParams, useLocation} from "react-router-dom";
-import {useSubscription, useStompClient} from "react-stomp-hooks";
+import { useParams, useLocation } from "react-router-dom";
+import { useSubscription, useStompClient } from "react-stomp-hooks";
 import InputField from "../../utils/InputField.jsx";
 import Delta from 'quill-delta';
 import QuillCursors from "quill-cursors";
@@ -38,8 +38,8 @@ export default function Edit() {
     const [range, setRange] = useState();
     const [lastChange, setLastChange] = useState();
     const [test, setTest] = useState();
-    const {docId} = useParams();
-    const {state} = useLocation();
+    const { docId } = useParams();
+    const { state } = useLocation();
     const [counter, setCounter] = useState(0);
     const [loading, setLoading] = useState(true);
     const [loadingContent, setLoadingContent] = useState(true);
@@ -58,7 +58,8 @@ export default function Edit() {
     useEffect(() => {
         fetch(`http://localhost:3000/api/docs/${docId}`, {
             method: 'GET', headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                "Authorization": `Bearer ${localStorage.getItem('jwtKey')}`
             }, credentials: 'include',
         }).then(res => res.json()).then(data => {
             setIsOwner(data.owner === username);
@@ -71,11 +72,12 @@ export default function Edit() {
 
     useEffect(() => {
         if (!quillRef.current) return;
-            setCursor(quillRef.current.getEditor().getModule('cursors'));
+        setCursor(quillRef.current.getEditor().getModule('cursors'));
 
         fetch(`http://localhost:3000/api/docs/changes/${docId}`, {
             method: 'GET', headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                "Authorization": `Bearer ${localStorage.getItem('jwtKey')}`
             }, credentials: 'include',
         }).then(res => res.json()).then(data => {
             // console.log(data);
@@ -90,7 +92,7 @@ export default function Edit() {
                 const id = itm.id;
                 // console.log(itm);
                 // CRDT[id] = new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic);
-                setCRDT(oldstate => ({...oldstate, [id]: new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic)}));
+                setCRDT(oldstate => ({ ...oldstate, [id]: new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic) }));
                 if (itm.left === null) {
                     setFirstItem(id);
                 }
@@ -150,7 +152,7 @@ export default function Edit() {
         let incomingCursor = JSON.parse(msg.body);
         if (incomingCursor === null || incomingCursor.username === username) return;
         console.log(incomingCursor);
-        cursor.moveCursor(incomingCursor.username, {index: incomingCursor.index, length: incomingCursor.length});
+        cursor.moveCursor(incomingCursor.username, { index: incomingCursor.index, length: incomingCursor.length });
     });
 
     useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {
@@ -212,7 +214,7 @@ export default function Edit() {
         }
         incoming.right = CRDT[incoming.left].right;
         // CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
-        setCRDT(oldstate => ({...oldstate, [incoming.id]: new item(incoming.id, incoming.left, incoming.right, incoming.content)}));
+        setCRDT(oldstate => ({ ...oldstate, [incoming.id]: new item(incoming.id, incoming.left, incoming.right, incoming.content) }));
         CRDT[incoming.left].right = incoming.id;
         if (incoming.right !== null) CRDT[incoming.right].left = incoming.id;
 
@@ -232,16 +234,16 @@ export default function Edit() {
 
     return (<>
         {loading && <div className="h-screen w-screen bg-[#f1f3f4] flex justify-center items-center">
-            <img src={loadingGif} className="m-auto"/>
+            <img src={loadingGif} className="m-auto" />
         </div>}
         {!loading && <>
-            <NavBar title={state} signedin={loading} setsignedin={setLoading}/>
+            <NavBar title={state} signedin={loading} setsignedin={setLoading} />
 
             <div className="bg-[#f1f3f4] flex justify-center p-4 min-h-screen">
                 <div className="w-10/12 lg:w-8/12 text-black bg-white">
                     <div id="toolbar" className='flex justify-center '>
-                        <button className="ql-bold"/>
-                        <button className="ql-italic"/>
+                        <button className="ql-bold" />
+                        <button className="ql-italic" />
                     </div>
                     <ReactQuill
                         ref={quillRef}
@@ -279,11 +281,11 @@ export default function Edit() {
                                     if ('italic' in attribute) itm.isitalic = true;
                                 }
                                 // CRDT[id] = itm;
-                                setCRDT(oldstate => ({...oldstate, [id]: itm}));
+                                setCRDT(oldstate => ({ ...oldstate, [id]: itm }));
                                 // console.log(CRDT);
                                 stompClient.publish({
                                     destination: `/docs/change/${docId}`,
-                                    body: JSON.stringify({...itm, operation: "insert"})
+                                    body: JSON.stringify({ ...itm, operation: "insert" })
                                 });
                             } else if ('delete' in delta.ops[delta.ops.length - 1]) {
                                 const index = delta.ops[0].retain ? delta.ops[0].retain : 0;
@@ -294,7 +296,7 @@ export default function Edit() {
                                 // console.log({operation: "delete", id: id});
                                 stompClient.publish({
                                     destination: `/docs/change/${docId}`,
-                                    body: JSON.stringify({operation: "delete", id: id})
+                                    body: JSON.stringify({ operation: "delete", id: id })
                                 });
                                 // console.log(CRDT);
                             } else if ('retain' in delta.ops[delta.ops.length - 1]) {
@@ -309,7 +311,7 @@ export default function Edit() {
 
                                             stompClient.publish({
                                                 destination: `/docs/change/${docId}`,
-                                                body: JSON.stringify({...CRDT[id], operation: "format"})
+                                                body: JSON.stringify({ ...CRDT[id], operation: "format" })
                                             });
                                         }
                                     }
@@ -327,11 +329,11 @@ export default function Edit() {
                             // if (source === 'test') return;
                             stompClient.publish({
                                 destination: `/docs/cursor/${docId}`,
-                                body: JSON.stringify({username: username, index: range.index, length: range.length})
+                                body: JSON.stringify({ username: username, index: range.index, length: range.length })
                             });
                         }}
                         modules={{
-                            toolbar: ['bold', 'italic'], cursors: {selectionChangeSource: 'test'}
+                            toolbar: ['bold', 'italic'], cursors: { selectionChangeSource: 'test' }
                         }}
                     />
                     <div>

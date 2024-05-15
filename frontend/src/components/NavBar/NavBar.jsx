@@ -1,15 +1,15 @@
 import docsIcon from '../../assets/doc_image.png';
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
-export default function NavBar({title, signedin, setsignedin}) {
+export default function NavBar({ title, signedin, setsignedin }) {
     const username = localStorage.getItem('username');
     const navigate = useNavigate();
     return (<>
         <div className="sticky top-0 shadow-md z-40 flex justify-between items-center p-4 bg-white">
             <div className="flex items-center gap-4 text-black">
-                <img src={docsIcon} alt="Docs" width={40} height={40}/>
-                <h1 style={{color: '#5f6368', fontFamily: 'Product Sans'}} className="text-2xl">
+                <img src={docsIcon} alt="Docs" width={40} height={40} />
+                <h1 style={{ color: '#5f6368', fontFamily: 'Product Sans' }} className="text-2xl">
                     {title}
                 </h1>
             </div>
@@ -19,6 +19,7 @@ export default function NavBar({title, signedin, setsignedin}) {
                         setsignedin(true);
                         fetch('http://localhost:3000/api/auth/logout', {
                             credentials: 'include',
+                            "Authorization": `Bearer ${localStorage.getItem('jwtKey')}`
                         }).then(res => {
                             localStorage.removeItem('username');
                             localStorage.removeItem('jwtKey');
