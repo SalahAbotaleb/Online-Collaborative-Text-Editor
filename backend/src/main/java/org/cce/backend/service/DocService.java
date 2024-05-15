@@ -18,8 +18,8 @@ public interface DocService {
     String updatePermission(Long id, UserDocDTO userDoc);
     List<DocumentDTO> getAllDocs();
     List<DocumentChangeDTO> getDocChanges(Long id);
-    void saveDoc(Long id);
-    void loadDoc(Long id);
+//    void saveDoc(Long id);
+//    void loadDoc(Long id);
 
     DocumentDTO getDoc(Long id);
 }

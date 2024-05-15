@@ -65,15 +65,15 @@ public class DocController {
         return docService.getDocChanges(id);
     }
 
-    @PatchMapping("/save/{id}")
-    public void saveDoc(@PathVariable Long id) {
-        docService.saveDoc(id);
-    }
-
-    @GetMapping("/load/{id}")
-    public void loadDoc(@PathVariable Long id) {
-        docService.loadDoc(id);
-    }
+//    @PatchMapping("/save/{id}")
+//    public void saveDoc(@PathVariable Long id) {
+//        docService.saveDoc(id);
+//    }
+//
+//    @GetMapping("/load/{id}")
+//    public void loadDoc(@PathVariable Long id) {
+//        docService.loadDoc(id);
+//    }
     @GetMapping("/{id}")
     public DocumentDTO getDoc(@PathVariable Long id) {
         return docService.getDoc(id);
