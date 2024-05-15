@@ -3,7 +3,7 @@ import {useNavigate} from "react-router-dom";
 
 
 export default function NavBar({title, signedin, setsignedin}) {
-
+    const username = localStorage.getItem('username');
     const navigate = useNavigate();
     return (<>
         <div className="sticky top-0 shadow-md z-40 flex justify-between items-center p-4 bg-white">
@@ -13,13 +13,14 @@ export default function NavBar({title, signedin, setsignedin}) {
                     {title}
                 </h1>
             </div>
-            {signedin && <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4">
                 <button
                     onClick={() => {
                         setsignedin(true);
                         fetch('http://localhost:3000/api/auth/logout', {
                             credentials: 'include',
                         }).then(res => {
+                            localStorage.removeItem('username');
                             navigate('/');
                         }).catch(err => {
                             console.log(err);
@@ -29,7 +30,8 @@ export default function NavBar({title, signedin, setsignedin}) {
                 >
                     Sign out
                 </button>
-            </div>}
+                <p className="text-[#5f6368] font-['Product_sans'] text-lg font-bold">{username}</p>
+            </div>
         </div>
     </>)
 }

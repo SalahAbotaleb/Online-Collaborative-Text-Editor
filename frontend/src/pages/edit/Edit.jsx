@@ -8,6 +8,7 @@ import {useSubscription, useStompClient} from "react-stomp-hooks";
 import InputField from "../../utils/InputField.jsx";
 import Delta from 'quill-delta';
 import QuillCursors from "quill-cursors";
+import loadingGif from "../../assets/loading.gif";
 
 Quill.register('modules/cursors', QuillCursors);
 
@@ -31,7 +32,7 @@ const ids = [];
 const CRDT = {}
 // [1@m, 1@h, 2@m, 3@m]
 
-export default function Edit() {
+export default function Edit({isOwner, isEditor}) {
     const quillRef = useRef(null);
     const [value, setValue] = useState(quillRef.current?.getEditor().getContents());
     const [range, setRange] = useState();
@@ -40,8 +41,8 @@ export default function Edit() {
     const {docId} = useParams();
     const {state} = useLocation();
     const [counter, setCounter] = useState(0);
+    const [loading, setLoading] = useState(true);
     const [firstItem, setFirstItem] = useState(null);
-    const [left, setLeft] = useState('');
     const [cursor, setCursor] = useState(null);
     const [username] = useState(localStorage.getItem('username'));
 
@@ -52,32 +53,40 @@ export default function Edit() {
         if (quillRef.current) {
             setCursor(quillRef.current.getEditor().getModule('cursors'));
         }
+
+        // fetch(`http://localhost:3000/api/docs/${window.location.href.split('/').pop()}`, {
+        //     method: 'GET', headers: {
+        //         'Content-Type': 'application/json'
+        //     }, credentials: 'include',
+        // }).then(res => res.json()).then(data => {
+        //     console.log(data);
+        // }).catch(err => {
+        //     console.log(err);
+        // });
     }, []);
 
-    useEffect(() => {
-        if (!cursor) return;
-        cursor.createCursor("a", "moaaz", 'red');
-        cursor.createCursor("s", "salah", 'blue');
-    }, [cursor]);
-
     useSubscription(`/docs/broadcast/usernames/${docId}`, (msg) => {
-        let incomingUsername = JSON.parse(msg.body);
+        if (loading) return;
+        let incomingUsername = JSON.parse(msg.body).usernames;
         if (incomingUsername === null) return;
         console.log(incomingUsername);
 
-        const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
-
-        cursor.createCursor(incomingUsername, incomingUsername, randomColor);
+        incomingUsername.forEach((username) => {
+            const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+            cursor.createCursor(username, username, randomColor);
+        });
     });
 
     useSubscription(`/docs/broadcast/cursors/${docId}`, (msg) => {
+        if (loading) return;
         let incomingCursor = JSON.parse(msg.body);
-        if (incomingCursor === null || incomingCursor.username === left) return;
+        if (incomingCursor === null || incomingCursor.username === username) return;
         console.log(incomingCursor);
         cursor.moveCursor(incomingCursor.username, {index: incomingCursor.index, length: incomingCursor.length});
     });
 
     useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {
+        if (loading) return;
         let incomingItem = JSON.parse(msg.body);
         if (incomingItem === null) return;
 
@@ -102,7 +111,7 @@ export default function Edit() {
             return;
         }
 
-        if (incomingItem.id.split('@')[1] === left) return;
+        if (incomingItem.id.split('@')[1] === username) return;
 
         console.log(incomingItem);
         const incoming = new item(incomingItem.id, incomingItem.left, incomingItem.right, incomingItem.content, incomingItem.isdeleted, incomingItem.isbold, incomingItem.isitalic);
@@ -146,117 +155,124 @@ export default function Edit() {
     });
 
     return (<>
-        <NavBar title={state}/>
-        <InputField value={left} setValue={setLeft} label='Left' type='text'/>
+        {loading && <div className="h-screen w-screen bg-[#f1f3f4] flex justify-center items-center">
+            <img src={loadingGif} className="m-auto"/>
+        </div>}
+        {!loading && <>
+            <NavBar title={state}/>
 
-        <div className="bg-[#f1f3f4] flex justify-center p-4 min-h-screen">
-            <div className="w-10/12 lg:w-8/12 text-black bg-white">
-                <div id="toolbar" className='flex justify-center '>
-                    <button className="ql-bold"/>
-                    <button className="ql-italic"/>
-                </div>
-                <ReactQuill
-                    ref={quillRef}
-                    onChange={(value, delta, source, editor) => {
-                        setValue(editor.getContents());
-                        setLastChange(delta.ops);
-                        if (source === 'silent') return;
-                        console.log(delta.ops);
-                        if ('insert' in delta.ops[delta.ops.length - 1]) {
-                            const index = delta.ops[0].retain;
-                            const id = counter + "@" + left;
-                            ids.splice(index, 0, id);
-                            setCounter(counter + 1);
-                            let itm = new item(id, null, null, delta.ops[delta.ops.length - 1].insert);
-                            if (!index) {
-                                itm.left = null;
-                                itm.right = firstItem;
-                                if (firstItem !== null) {
-                                    CRDT[firstItem].left = id;
-                                }
-                                setFirstItem(id);
-                            } else {
-                                itm.left = ids[index - 1];
-                                if (CRDT[ids[index - 1]].right !== null) {
-                                    itm.right = CRDT[ids[index - 1]].right;
-                                    CRDT[CRDT[ids[index - 1]].right].left = id;
-                                }
-                                CRDT[ids[index - 1]].right = id;
-                            }
-                            if ('attributes' in delta.ops[delta.ops.length - 1]) {
-                                let attribute = delta.ops[delta.ops.length - 1].attributes;
-                                if ('bold' in attribute) itm.isbold = true;
-                                if ('italic' in attribute) itm.isitalic = true;
-                            }
-                            CRDT[id] = itm;
-                            console.log(CRDT);
-                            stompClient.publish({
-                                destination: `/docs/change/${docId}`,
-                                body: JSON.stringify({...itm, operation: "insert"})
-                            });
-                        } else if ('delete' in delta.ops[delta.ops.length - 1]) {
-                            const index = delta.ops[0].retain ? delta.ops[0].retain : 0;
-                            const id = ids[index];
-                            ids.splice(index, 1);
-                            CRDT[id].isdeleted = true;
-                            console.log({operation: "delete", id: id});
-                            stompClient.publish({
-                                destination: `/docs/change/${docId}`,
-                                body: JSON.stringify({operation: "delete", id: id})
-                            });
-                            console.log(CRDT);
-                        } else if ('retain' in delta.ops[delta.ops.length - 1]) {
-                            // const letters = delta.ops[delta.ops.length - 1].retain;
-                            let index = 0;
-                            for (let i = 0; i < delta.ops.length; i++) {
-                                if ('attributes' in delta.ops[i]) {
-                                    for (let j = 0; j < delta.ops[i].retain; j++) {
-                                        const id = ids[index + j];
-                                        CRDT[id].isbold = delta.ops[i].attributes.bold;
-                                        CRDT[id].isitalic = delta.ops[i].attributes.italic;
-
-                                        stompClient.publish({
-                                            destination: `/docs/change/${docId}`,
-                                            body: JSON.stringify({...CRDT[id], operation: "format"})
-                                        });
+            <div className="bg-[#f1f3f4] flex justify-center p-4 min-h-screen">
+                <div className="w-10/12 lg:w-8/12 text-black bg-white">
+                    <div id="toolbar" className='flex justify-center '>
+                        <button className="ql-bold"/>
+                        <button className="ql-italic"/>
+                    </div>
+                    <ReactQuill
+                        ref={quillRef}
+                        readOnly={!isEditor && !isOwner}
+                        onChange={(value, delta, source, editor) => {
+                            setValue(editor.getContents());
+                            setLastChange(delta.ops);
+                            if (source === 'silent') return;
+                            console.log(delta.ops);
+                            if ('insert' in delta.ops[delta.ops.length - 1]) {
+                                const index = delta.ops[0].retain;
+                                const id = counter + "@" + username;
+                                ids.splice(index, 0, id);
+                                setCounter(counter + 1);
+                                let itm = new item(id, null, null, delta.ops[delta.ops.length - 1].insert);
+                                if (!index) {
+                                    itm.left = null;
+                                    itm.right = firstItem;
+                                    if (firstItem !== null) {
+                                        CRDT[firstItem].left = id;
                                     }
+                                    setFirstItem(id);
+                                } else {
+                                    itm.left = ids[index - 1];
+                                    if (CRDT[ids[index - 1]].right !== null) {
+                                        itm.right = CRDT[ids[index - 1]].right;
+                                        CRDT[CRDT[ids[index - 1]].right].left = id;
+                                    }
+                                    CRDT[ids[index - 1]].right = id;
                                 }
-                                index += delta.ops[i].retain;
-                            }
-                        }
+                                if ('attributes' in delta.ops[delta.ops.length - 1]) {
+                                    let attribute = delta.ops[delta.ops.length - 1].attributes;
+                                    if ('bold' in attribute) itm.isbold = true;
+                                    if ('italic' in attribute) itm.isitalic = true;
+                                }
+                                CRDT[id] = itm;
+                                console.log(CRDT);
+                                stompClient.publish({
+                                    destination: `/docs/change/${docId}`,
+                                    body: JSON.stringify({...itm, operation: "insert"})
+                                });
+                            } else if ('delete' in delta.ops[delta.ops.length - 1]) {
+                                const index = delta.ops[0].retain ? delta.ops[0].retain : 0;
+                                const id = ids[index];
+                                ids.splice(index, 1);
+                                CRDT[id].isdeleted = true;
+                                console.log({operation: "delete", id: id});
+                                stompClient.publish({
+                                    destination: `/docs/change/${docId}`,
+                                    body: JSON.stringify({operation: "delete", id: id})
+                                });
+                                console.log(CRDT);
+                            } else if ('retain' in delta.ops[delta.ops.length - 1]) {
+                                // const letters = delta.ops[delta.ops.length - 1].retain;
+                                let index = 0;
+                                for (let i = 0; i < delta.ops.length; i++) {
+                                    if ('attributes' in delta.ops[i]) {
+                                        for (let j = 0; j < delta.ops[i].retain; j++) {
+                                            const id = ids[index + j];
+                                            CRDT[id].isbold = delta.ops[i].attributes.bold;
+                                            CRDT[id].isitalic = delta.ops[i].attributes.italic;
 
-                        console.log(ids);
-                        // console.log(newdelta)
-                        setTest(value)
-                        // console.log(delta.diff(newdelta))
-                    }}
-                    onChangeSelection={(range, source, editor) => {
-                        stompClient.publish({
-                            destination: `/docs/cursor/${docId}`,
-                            body: JSON.stringify({username: left, index: range.index, length: range.length})
-                        });
-                    }}
-                    modules={{
-                        toolbar: ['bold', 'italic'], cursors: true
-                    }}
-                />
-                <div>
-                    <div>Current value:</div>
-                    {value ? JSON.stringify(value.ops) : 'Empty'}
-                </div>
-                <div>
-                    <div>Current Range:</div>
-                    {range ? JSON.stringify(range) : 'Empty'}
-                </div>
-                <div>
-                    <div>Last Change:</div>
-                    {lastChange ? JSON.stringify(lastChange) : 'Empty'}
-                </div>
-                <div>
-                    <div>Test:</div>
-                    {test}
+                                            stompClient.publish({
+                                                destination: `/docs/change/${docId}`,
+                                                body: JSON.stringify({...CRDT[id], operation: "format"})
+                                            });
+                                        }
+                                    }
+                                    index += delta.ops[i].retain;
+                                }
+                            }
+
+                            console.log(ids);
+                            // console.log(newdelta)
+                            setTest(value)
+                            // console.log(delta.diff(newdelta))
+                        }}
+                        onChangeSelection={(range, source, editor) => {
+                            setRange(range);
+                            // if (source === 'test') return;
+                            stompClient.publish({
+                                destination: `/docs/cursor/${docId}`,
+                                body: JSON.stringify({username: username, index: range.index, length: range.length})
+                            });
+                        }}
+                        modules={{
+                            toolbar: ['bold', 'italic'], cursors: {selectionChangeSource: 'test'}
+                        }}
+                    />
+                    <div>
+                        <div>Current value:</div>
+                        {value ? JSON.stringify(value.ops) : 'Empty'}
+                    </div>
+                    <div>
+                        <div>Current Range:</div>
+                        {range ? JSON.stringify(range) : 'Empty'}
+                    </div>
+                    <div>
+                        <div>Last Change:</div>
+                        {lastChange ? JSON.stringify(lastChange) : 'Empty'}
+                    </div>
+                    <div>
+                        <div>Test:</div>
+                        {test}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>}
     </>);
 }

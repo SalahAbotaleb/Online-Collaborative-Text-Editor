@@ -8,7 +8,7 @@ import NavBar from "../components/NavBar/NavBar.jsx";
 import loadingGif from '../assets/loading.gif';
 import {useNavigate} from "react-router-dom";
 
-export default function View() {
+export default function View({isEditor, isOwner, setIsEditor, setIsOwner}) {
     const [selected, setSelected] = useState('owned by anyone');
     const [docs, setDocs] = useState([]);
     const [create, setCreate] = useState(false);
@@ -83,7 +83,7 @@ export default function View() {
                 {docs.map((file) => {
                     if (selected === 'owned by me' && file.owner !== username) return null;
                     if (selected === 'shared with me' && !file.sharedWith.some(shared => shared.username === username)) return null;
-                    return <DocumentPill key={file.id} file={file} files={docs} setFiles={setDocs}/>
+                    return <DocumentPill key={file.id} file={file} files={docs} setFiles={setDocs} isOwner={isOwner} isEditor={isEditor} setIsOwner={setIsOwner} setIsEditor={setIsEditor}/>
                 })}
                 {docs.length === 0 && <div className="w-10/12 bg-white p-4 rounded-lg shadow-md">
                     <h1 className="text-[#5f6368] font-['Product_sans'] text-xl font-bold text-center">No documents
