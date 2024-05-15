@@ -11,10 +11,10 @@ public class CrdtManagerService {
     @Autowired
     private DocRepository docRepository;
     private ConcurrentHashMap<Long, Crdt> crdtMap = new ConcurrentHashMap<>();
-    public Crdt getCrdt(Long docId){
+    public synchronized Crdt getCrdt(Long docId){
         return crdtMap.getOrDefault(docId,null);
     }
-    public void createCrdt(Long docId){
+    public synchronized void createCrdt(Long docId){
         if(crdtMap.containsKey(docId)){
             return;
         }
@@ -23,7 +23,7 @@ public class CrdtManagerService {
         crdtMap.put(docId, crdt);
     }
 
-    public void saveAndDeleteCrdt(Long docId){
+    public synchronized void saveAndDeleteCrdt(Long docId){
         if(!crdtMap.containsKey(docId)){
             return;
         }
