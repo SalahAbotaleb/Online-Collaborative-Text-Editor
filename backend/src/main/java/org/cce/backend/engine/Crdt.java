@@ -16,7 +16,12 @@ public class Crdt {
     public Crdt() {
         crdtMap = new HashMap<>();
     }
+
     public Crdt(byte[] bytes){
+        InitCrdt(bytes);
+    }
+
+    public void InitCrdt(byte[] bytes){
         List<Item> items = (List<Item>) getDeserializedCrdt(bytes);
         crdtMap = getCrdtMap(items);
         if(items.size()!=0) {

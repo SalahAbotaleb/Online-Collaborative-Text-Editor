@@ -11,16 +11,26 @@ public class CrdtManagerService {
     @Autowired
     private DocRepository docRepository;
     private ConcurrentHashMap<Long, Crdt> crdtMap = new ConcurrentHashMap<>();
-    public synchronized Crdt getCrdt(Long docId){
-        return crdtMap.getOrDefault(docId,null);
+    public Crdt getCrdt(Long docId){
+        Crdt crdt = crdtMap.getOrDefault(docId,null);
+        if(crdt == null){
+            return null;
+        }
+        synchronized (crdt){
+            return crdt;
+        }
     }
-    public synchronized void createCrdt(Long docId){
+    public void createCrdt(Long docId){
         if(crdtMap.containsKey(docId)){
             return;
         }
-        byte[] crdtContent = docRepository.getDocById(docId).get().getContent();
-        Crdt crdt = new Crdt(crdtContent);
-        crdtMap.put(docId, crdt);
+        Crdt crdt = new Crdt();
+        crdtMap.put(docId,crdt);
+        synchronized (crdt) {
+            byte[] crdtContent = docRepository.getDocById(docId).get().getContent();
+            crdt.InitCrdt(crdtContent);
+            crdtMap.put(docId, crdt);
+        }
     }
 
     public synchronized void saveAndDeleteCrdt(Long docId){
