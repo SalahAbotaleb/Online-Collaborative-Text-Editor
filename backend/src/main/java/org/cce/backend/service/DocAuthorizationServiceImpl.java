@@ -1,5 +1,6 @@
 package org.cce.backend.service;
 
+import org.cce.backend.entity.Doc;
 import org.cce.backend.entity.User;
 import org.cce.backend.enums.Permission;
 import org.cce.backend.exception.UserNotFoundException;
@@ -27,13 +28,12 @@ public class DocAuthorizationServiceImpl implements DocAuthorizationService {
     }
 
     @Override
-    public boolean canEdit(String docId) {
-        User user = getCurrentUser();
-        return user.getAccessDoc().stream().anyMatch(doc -> doc.getDoc().getId().equals(docId) && (doc.getPermission().equals(Permission.EDIT) || doc.getPermission().equals(Permission.OWNER)));
+    public boolean canEdit(String username, Doc doc) {
+        return doc.getOwner().getUsername().equals(username) || doc.getSharedWith().stream()
+                .anyMatch(userDoc -> userDoc.getUser().getUsername().equals(username) && userDoc.getPermission().equals(Permission.EDIT));
     }
 
-    public boolean fullAccess(String docId) {
-        User user = getCurrentUser();
-        return user.getAccessDoc().stream().anyMatch(doc -> doc.getDoc().getId().equals(docId) && doc.getPermission().equals(Permission.OWNER));
+    public boolean fullAccess(String username, Doc doc) {
+        return doc.getOwner().getUsername().equals(username);
     }
 }

@@ -57,6 +57,10 @@ public class DocServiceImpl implements DocService {
 
     @Autowired
     CrdtManagerService crdtManagerService;
+
+    @Autowired
+    DocAuthorizationService docAuthorizationService;
+
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
         return userRepository.findById(username)
@@ -85,6 +89,10 @@ public class DocServiceImpl implements DocService {
     @Override
     public Long deleteDoc(Long id) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+        String username = SecurityUtil.getCurrentUsername();
+        if (!docAuthorizationService.fullAccess(username, doc)) {
+            throw new UnauthorizedUserException("You are not authorized to delete this document");
+        }
         docRepository.deleteById(id);
         return id;
     }
@@ -93,6 +101,10 @@ public class DocServiceImpl implements DocService {
     @Override
     public String updateDocTitle(Long id, DocTitleDTO title) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+        String username = SecurityUtil.getCurrentUsername();
+        if(!docAuthorizationService.canEdit(username, doc)) {
+            throw new UnauthorizedUserException("You are not authorized to update this document");
+        }
         doc.setTitle(title.getTitle());
         docRepository.save(doc);
         return "Title updated successfully";
@@ -104,6 +116,10 @@ public class DocServiceImpl implements DocService {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
         User user = userRepository.findById(userDocDTO.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        String username = SecurityUtil.getCurrentUsername();
+        if (!docAuthorizationService.canEdit(username, doc)) {
+            throw new UnauthorizedUserException("You are not authorized to share this document");
+        }
         UserDocId userDocId = UserDocId.builder().docId(doc.getId()).username(user.getUsername()).build();
         UserDoc userDoc = UserDoc.builder()
                 .userDocId(userDocId)
@@ -126,7 +142,10 @@ public class DocServiceImpl implements DocService {
     @Override
     public String removeUser(Long id, UserDocDTO userDocDTO) {
         String username = SecurityUtil.getCurrentUsername();
-
+        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+        if (!docAuthorizationService.canEdit(username, doc)) {
+            throw new UnauthorizedUserException("You are not authorized to remove users from this document");
+        }
         int isDeleted = userDocRepository.deleteUserDocBy(userDocDTO.getUsername(), id, username);
 
         return isDeleted != 0 ? "User removed successfully" : "User not found";
@@ -137,6 +156,10 @@ public class DocServiceImpl implements DocService {
     public String updatePermission(Long id, UserDocDTO userDocDTO) {
         validatePermission(userDocDTO);
         String username = SecurityUtil.getCurrentUsername();
+        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+        if (!docAuthorizationService.canEdit(username, doc)) {
+            throw new UnauthorizedUserException("You are not authorized to update permissions for this document");
+        }
         int isUpdated = userDocRepository.updateUserDocBy(userDocDTO.getUsername(), id, username, userDocDTO.getPermission());
 
         return isUpdated != 0 ? "User updated successfully" : "Failed to update";
