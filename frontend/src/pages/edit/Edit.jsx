@@ -48,6 +48,7 @@ export default function Edit() {
     const [username] = useState(localStorage.getItem('username'));
     const [ids, setIds] = useState([]);
     const [CRDT, setCRDT] = useState({});
+    const [currentUsers, setCurrentUsers] = useState([]);
 
     const [isOwner, setIsOwner] = useState(false);
     const [isEditor, setIsEditor] = useState(false);
@@ -113,6 +114,14 @@ export default function Edit() {
         });
     }, [loading]);
 
+    useEffect(() => {
+        if (!cursor) return;
+        currentUsers.forEach((username) => {
+            const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+            cursor.createCursor(username, username, randomColor);
+        });
+    }, [cursor, currentUsers]);
+
     // useEffect(() => {
     //     if (!quillRef.current) return;
     //     setCursor(quillRef.current.getEditor().getModule('cursors'));
@@ -132,12 +141,8 @@ export default function Edit() {
         console.log(msg.body);
         let incomingUsername = JSON.parse(msg.body).usernames;
         if (incomingUsername === null) return;
-        console.log(incomingUsername);
 
-        incomingUsername.forEach((username) => {
-            const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
-            cursor.createCursor(username, username, randomColor);
-        });
+        setCurrentUsers(incomingUsername);
     });
 
     useSubscription(`/docs/broadcast/cursors/${docId}`, (msg) => {
@@ -149,7 +154,7 @@ export default function Edit() {
     });
 
     useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {
-        if (loading) return;
+        // if (loading) return;
         let incomingItem = JSON.parse(msg.body);
         if (incomingItem === null) return;
 
