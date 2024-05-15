@@ -36,12 +36,7 @@ public class DocWebSocketController {
         } else {
             crdt.format(message.getId(), message.getIsBold(), message.getIsItalic());
         }
-//        System.out.println(crdt.toString());
-//        System.out.println("hnaaaa");
-//        System.out.println(crdt.getItems());
-//        System.out.println("lmaza");
-//        System.out.println(documentChangeMapper.toDto(crdt.getItems()));
-//        System.out.println("Clear Data" + crdt.getClearData());
+
         messagingTemplate.convertAndSend("/docs/broadcast/changes/" + id, message);
     }
 

@@ -163,23 +163,6 @@ public class DocServiceImpl implements DocService {
         }
         return documentChangeMapper.toDto(crdt.getItems());
     }
-//
-//    @Transactional
-//    @Override
-//    public void saveDoc(Long id) {
-//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-//        doc.setContent(crdt.getSerializedCrdt());
-//        docRepository.save(doc);
-//    }
-
-//    @Transactional
-//    @Override
-//    public void loadDoc(Long id) {
-//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
-//        byte[] content = doc.getContent();
-//        Crdt crdt1 =  new Crdt(content);
-//        System.out.println(crdt1.getItems());
-//    }
 
     @Override
     public DocumentDTO getDoc(Long id) {
