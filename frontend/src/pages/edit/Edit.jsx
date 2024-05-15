@@ -77,7 +77,7 @@ export default function Edit() {
                 'Content-Type': 'application/json'
             }, credentials: 'include',
         }).then(res => res.json()).then(data => {
-            console.log(data);
+            // console.log(data);
             setLoading(false);
             const tempids = [];
             let maxcounter = 0;
@@ -87,13 +87,13 @@ export default function Edit() {
                 }
 
                 const id = itm.id;
-                console.log(itm);
+                // console.log(itm);
                 // CRDT[id] = new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic);
                 setCRDT(oldstate => ({...oldstate, [id]: new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic)}));
                 if (itm.left === null) {
                     setFirstItem(id);
                 }
-                console.log(ids);
+                // console.log(ids);
                 if (itm.isdeleted) return;
                 tempids.push(id);
                 // setIds([...ids, id])
@@ -128,7 +128,8 @@ export default function Edit() {
     // }, [quillRef.current]);
 
     useSubscription(`/docs/broadcast/usernames/${docId}`, (msg) => {
-        if (loading) return;
+        // if (!quillRef.current) return;
+        console.log(msg.body);
         let incomingUsername = JSON.parse(msg.body).usernames;
         if (incomingUsername === null) return;
         console.log(incomingUsername);
@@ -152,10 +153,10 @@ export default function Edit() {
         let incomingItem = JSON.parse(msg.body);
         if (incomingItem === null) return;
 
-        console.log(CRDT);
-        console.log(ids);
+        // console.log(CRDT);
+        // console.log(ids);
 
-        console.log(incomingItem);
+        // console.log(incomingItem);
         if (incomingItem.operation === 'format') {
             CRDT[incomingItem.id].isbold = incomingItem.isbold;
             CRDT[incomingItem.id].isitalic = incomingItem.isitalic;
@@ -173,19 +174,19 @@ export default function Edit() {
             setIds(ids.filter(id => id !== incomingItem.id));
             CRDT[incomingItem.id].isdeleted = true;
             quillRef.current.getEditor().updateContents(new Delta().retain(index).delete(1), "silent");
-            console.log(CRDT);
+            // console.log(CRDT);
             return;
         }
 
         if (incomingItem.id.split('@')[1] === username) return;
 
-        console.log(incomingItem);
+        // console.log(incomingItem);
         const incoming = new item(incomingItem.id, incomingItem.left, incomingItem.right, incomingItem.content, incomingItem.isdeleted, incomingItem.isbold, incomingItem.isitalic);
-        console.log(incoming);
+        // console.log(incoming);
         if (incoming.left === null) {
             if (firstItem !== incoming.right && firstItem.split('@')[1] > incoming.id.split('@')[1]) {
                 incoming.left = firstItem;
-                console.log(incoming);
+                // console.log(incoming);
             } else {
                 incoming.right = firstItem;
                 if (firstItem !== null) CRDT[firstItem].left = incoming.id;
@@ -197,7 +198,7 @@ export default function Edit() {
                 quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content), "silent");
                 // ids.splice(quillidx + 1, 0, incoming.id);
                 setIds([incoming.id, ...ids]);
-                console.log('here');
+                // console.log('here');
                 return;
             }
         }
@@ -217,7 +218,7 @@ export default function Edit() {
         let attributes = {};
         attributes.bold = incoming.isbold;
         attributes.italic = incoming.isitalic;
-        console.log(attributes);
+        // console.log(attributes);
         quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content, attributes), "silent");
         // ids.splice(quillidx + 1, 0, incoming.id);
         setIds(oldstate => [...oldstate.slice(0, quillidx + 1), incoming.id, ...oldstate.slice(quillidx + 1)]);
@@ -244,7 +245,7 @@ export default function Edit() {
                             setValue(editor.getContents());
                             setLastChange(delta.ops);
                             if (source === 'silent') return;
-                            console.log(delta.ops);
+                            // console.log(delta.ops);
                             if ('insert' in delta.ops[delta.ops.length - 1]) {
                                 const index = delta.ops[0].retain;
                                 const id = counter + "@" + username;
@@ -274,7 +275,7 @@ export default function Edit() {
                                 }
                                 // CRDT[id] = itm;
                                 setCRDT(oldstate => ({...oldstate, [id]: itm}));
-                                console.log(CRDT);
+                                // console.log(CRDT);
                                 stompClient.publish({
                                     destination: `/docs/change/${docId}`,
                                     body: JSON.stringify({...itm, operation: "insert"})
@@ -285,12 +286,12 @@ export default function Edit() {
                                 // ids.splice(index, 1);
                                 setIds(ids.filter(id => id !== ids[index]));
                                 CRDT[id].isdeleted = true;
-                                console.log({operation: "delete", id: id});
+                                // console.log({operation: "delete", id: id});
                                 stompClient.publish({
                                     destination: `/docs/change/${docId}`,
                                     body: JSON.stringify({operation: "delete", id: id})
                                 });
-                                console.log(CRDT);
+                                // console.log(CRDT);
                             } else if ('retain' in delta.ops[delta.ops.length - 1]) {
                                 // const letters = delta.ops[delta.ops.length - 1].retain;
                                 let index = 0;
@@ -311,7 +312,7 @@ export default function Edit() {
                                 }
                             }
 
-                            console.log(ids);
+                            // console.log(ids);
                             // console.log(newdelta)
                             setTest(value)
                             // console.log(delta.diff(newdelta))
