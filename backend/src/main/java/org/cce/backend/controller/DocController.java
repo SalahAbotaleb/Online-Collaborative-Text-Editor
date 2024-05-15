@@ -2,6 +2,7 @@ package org.cce.backend.controller;
 
 import jakarta.validation.Valid;
 import org.cce.backend.dto.DocTitleDTO;
+import org.cce.backend.dto.DocumentChangeDTO;
 import org.cce.backend.dto.UserDocDTO;
 import org.cce.backend.dto.DocumentDTO;
 import org.cce.backend.service.DocService;
@@ -58,6 +59,21 @@ public class DocController {
         return docService.getAllDocs();
     }
 
+    @GetMapping("/changes/{id}")
+    public List<DocumentChangeDTO> getDocChanges(@PathVariable Long id) {
+        System.out.println(docService.getDocChanges(id));
+        return docService.getDocChanges(id);
+    }
+
+//    @PatchMapping("/save/{id}")
+//    public void saveDoc(@PathVariable Long id) {
+//        docService.saveDoc(id);
+//    }
+//
+//    @GetMapping("/load/{id}")
+//    public void loadDoc(@PathVariable Long id) {
+//        docService.loadDoc(id);
+//    }
     @GetMapping("/{id}")
     public DocumentDTO getDoc(@PathVariable Long id) {
         return docService.getDoc(id);

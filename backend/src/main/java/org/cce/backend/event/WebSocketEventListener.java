@@ -1,8 +1,10 @@
 package org.cce.backend.event;
 
-import org.antlr.v4.runtime.misc.Pair;
 import org.cce.backend.dto.ActiveUsers;
+import org.cce.backend.engine.Crdt;
+import org.cce.backend.engine.CrdtManagerService;
 import org.cce.backend.entity.WebSocketSession;
+import org.cce.backend.repository.DocRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -24,6 +26,8 @@ public class WebSocketEventListener {
     private SimpMessagingTemplate messagingTemplate;
     private ConcurrentHashMap<String, WebSocketSession> socketSession;
     private ConcurrentHashMap<String, List<String>> docSessions;
+    @Autowired
+    private CrdtManagerService crdtManagerService;
     public WebSocketEventListener(){
         socketSession =new ConcurrentHashMap<>();
         docSessions=new ConcurrentHashMap<>();
@@ -31,41 +35,30 @@ public class WebSocketEventListener {
     @EventListener
     private void handleSessionConnected(SessionConnectedEvent event) {
         SimpMessageHeaderAccessor headers = SimpMessageHeaderAccessor.wrap(event.getMessage());
-        String sessionId= headers.getSessionId();
-        String username = headers.getUser().getName();
-        System.out.println("connect");
+        String sessionId = getSessionId(headers);
+        String username = getUsername(headers);
         socketSession.put(sessionId,new WebSocketSession(username,""));
     }
 
     @EventListener
     private void handleSessionSubscribe(SessionSubscribeEvent event){
         SimpMessageHeaderAccessor headers = SimpMessageHeaderAccessor.wrap(event.getMessage());
-        String docId = extractDocIdFromPath(headers.getDestination());
+        String docId = getDocId(headers);
         if(docId == "") return;
-        String sessionId = headers.getSessionId();
+        String sessionId = getSessionId(headers);
         socketSession.get(sessionId).setDocId(docId);
-
+        if(docSessions.containsKey(docId) == false){
+            crdtManagerService.createCrdt(Long.parseLong(docId));
+        }
         List<String> docSessionParticipants = docSessions.getOrDefault(docId,new ArrayList<>());
         docSessionParticipants.add(sessionId);
         docSessions.put(docId,docSessionParticipants);
-
-        ActiveUsers activeUsers = new ActiveUsers();
-
-        List<String> usernames = docSessionParticipants.stream().map((sessionKey)->
-        {
-            return socketSession.get(sessionKey).getUsername();
-        }).toList();
-        activeUsers.setUsernames(usernames);
-        System.out.println(activeUsers);
-        System.out.println(socketSession);
-        System.out.println(docSessions);
-        messagingTemplate.convertAndSend("/docs/broadcast/usernames/"+docId,activeUsers);
+        notifyActiveUsers(docId);
     }
     @EventListener
     private void handleSessionDisconnect(SessionDisconnectEvent event) {
         SimpMessageHeaderAccessor headers = SimpMessageHeaderAccessor.wrap(event.getMessage());
-        String sessionId= headers.getSessionId(); System.out.println(headers.getSessionId());
-        System.out.println("diconnect");
+        String sessionId= headers.getSessionId();
         WebSocketSession sessionData = socketSession.get(sessionId);
         socketSession.remove(sessionId);
         if(sessionData == null) return;
@@ -73,25 +66,42 @@ public class WebSocketEventListener {
         List<String> docSessionParticipants = docSessions.get(docId);
         if(docSessionParticipants==null) return;
         docSessionParticipants.remove(sessionId);
-        if(docSessionParticipants.size()==0){
+        if(docSessionParticipants.size() == 0){
             docSessions.remove(docId);
+            crdtManagerService.saveAndDeleteCrdt(Long.parseLong(docId));
         }
-        ActiveUsers activeUsers = new ActiveUsers();
-
-        List<String> usernames = docSessionParticipants.stream().map((sessionKey)->
-        {
-            return socketSession.get(sessionKey).getUsername();
-        }).toList();
-        activeUsers.setUsernames(usernames);
-        System.out.println(socketSession);
-        System.out.println(docSessions);
-        messagingTemplate.convertAndSend("/docs/broadcast/usernames/"+docId,activeUsers);
-
+        notifyActiveUsers(docId);
     }
 
     private String extractDocIdFromPath(String path) {
         UriTemplate uriTemplate = new UriTemplate("/docs/broadcast/changes/{id}");
         Map<String, String> matchResult = uriTemplate.match(path);
         return matchResult.getOrDefault("id","");
+    }
+
+    private void notifyActiveUsers(String docId){
+        List<String> docSessionParticipants = docSessions.get(docId);
+        if(docSessionParticipants==null){
+            return;
+        }
+        ActiveUsers activeUsers = new ActiveUsers();
+        List<String> usernames = docSessionParticipants.stream().map((sessionKey)->
+        {
+            return socketSession.get(sessionKey).getUsername();
+        }).toList();
+        activeUsers.setUsernames(usernames);
+        messagingTemplate.convertAndSend("/docs/broadcast/usernames/"+docId,activeUsers);
+    }
+
+    private String getSessionId(SimpMessageHeaderAccessor headers){
+        return headers.getSessionId();
+    }
+
+    private String getUsername(SimpMessageHeaderAccessor headers){
+        return headers.getUser().getName();
+    }
+
+    private String getDocId(SimpMessageHeaderAccessor headers){
+        return extractDocIdFromPath(headers.getDestination());
     }
 }

@@ -1,12 +1,17 @@
 package org.cce.backend.service;
 
 import org.cce.backend.dto.DocTitleDTO;
+import org.cce.backend.dto.DocumentChangeDTO;
 import org.cce.backend.dto.UserDocDTO;
+import org.cce.backend.engine.Crdt;
+import org.cce.backend.engine.CrdtManagerService;
+import org.cce.backend.engine.Item;
 import org.cce.backend.entity.*;
 import org.cce.backend.dto.DocumentDTO;
 import org.cce.backend.enums.Permission;
 import org.cce.backend.exception.UnauthorizedUserException;
 import org.cce.backend.exception.UserNotFoundException;
+import org.cce.backend.mapper.DocumentChangeMapper;
 import org.cce.backend.mapper.DocumentMapper;
 import org.cce.backend.mapper.UserDocMapper;
 import org.cce.backend.mapper.UserMapper;
@@ -19,7 +24,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +52,11 @@ public class DocServiceImpl implements DocService {
     @Autowired
     UserDocRepository userDocRepository;
 
+    @Autowired
+    DocumentChangeMapper documentChangeMapper;
 
+    @Autowired
+    CrdtManagerService crdtManagerService;
     private User getCurrentUser() {
         String username = SecurityUtil.getCurrentUsername();
         return userRepository.findById(username)
@@ -62,7 +73,7 @@ public class DocServiceImpl implements DocService {
         Doc doc = Doc.builder()
                 .owner(user)
                 .title(title)
-                .content("")
+                .content(new byte[0])
                 .sharedWith(new ArrayList<>())
                 .build();
 
@@ -139,6 +150,36 @@ public class DocServiceImpl implements DocService {
         return docs.stream().map(doc -> documentMapper.toDto(doc))
                 .collect(Collectors.toList());
     }
+
+    @Transactional
+    @Override
+    public List<DocumentChangeDTO> getDocChanges(Long id) {
+        Crdt crdt = crdtManagerService.getCrdt(id);
+        if(crdt == null) {
+            Doc doc = docRepository.findById(id).orElseThrow(
+                    () -> new RuntimeException("Document not found")
+            );
+            crdt = new Crdt(doc.getContent());
+        }
+        return documentChangeMapper.toDto(crdt.getItems());
+    }
+//
+//    @Transactional
+//    @Override
+//    public void saveDoc(Long id) {
+//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//        doc.setContent(crdt.getSerializedCrdt());
+//        docRepository.save(doc);
+//    }
+
+//    @Transactional
+//    @Override
+//    public void loadDoc(Long id) {
+//        Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
+//        byte[] content = doc.getContent();
+//        Crdt crdt1 =  new Crdt(content);
+//        System.out.println(crdt1.getItems());
+//    }
 
     @Override
     public DocumentDTO getDoc(Long id) {
