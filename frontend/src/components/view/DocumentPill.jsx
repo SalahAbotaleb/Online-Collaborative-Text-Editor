@@ -1,5 +1,5 @@
 import menu from '../../assets/menu-icon.svg';
-import {Fragment} from 'react'
+import {Fragment, useEffect} from 'react'
 import {Menu, Transition} from '@headlessui/react'
 import DeleteIcon from '@mui/icons-material/Delete';
 import DriveFileRenameOutlineRoundedIcon from '@mui/icons-material/DriveFileRenameOutlineRounded';
@@ -22,6 +22,11 @@ export default function DocumentPill({file, files, setFiles}) {
     const [isEditor] = useState(file.sharedWith.some(shared => shared.username === username && shared.permission === 'EDIT'));
 
     const navigate = useNavigate();
+
+    // useEffect(() => {
+    //     setIsOwner(file.owner === username);
+    //     setIsEditor(file.sharedWith.some(shared => shared.username === username && shared.permission === 'EDIT'));
+    // }, []);
 
     return (<div
         className="flex justify-between items-center mb-4 py-4 pl-8 bg-white rounded-lg shadow-md w-10/12 hover:bg-blue-300 cursor-pointer"

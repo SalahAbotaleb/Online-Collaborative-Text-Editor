@@ -1,7 +1,10 @@
 package org.cce.backend.event;
 
 import org.cce.backend.dto.ActiveUsers;
+import org.cce.backend.engine.Crdt;
+import org.cce.backend.engine.CrdtManagerService;
 import org.cce.backend.entity.WebSocketSession;
+import org.cce.backend.repository.DocRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -23,6 +26,8 @@ public class WebSocketEventListener {
     private SimpMessagingTemplate messagingTemplate;
     private ConcurrentHashMap<String, WebSocketSession> socketSession;
     private ConcurrentHashMap<String, List<String>> docSessions;
+    @Autowired
+    private CrdtManagerService crdtManagerService;
     public WebSocketEventListener(){
         socketSession =new ConcurrentHashMap<>();
         docSessions=new ConcurrentHashMap<>();
@@ -42,6 +47,9 @@ public class WebSocketEventListener {
         if(docId == "") return;
         String sessionId = getSessionId(headers);
         socketSession.get(sessionId).setDocId(docId);
+        if(docSessions.containsKey(docId) == false){
+            crdtManagerService.createCrdt(Long.parseLong(docId));
+        }
         List<String> docSessionParticipants = docSessions.getOrDefault(docId,new ArrayList<>());
         docSessionParticipants.add(sessionId);
         docSessions.put(docId,docSessionParticipants);
@@ -58,8 +66,9 @@ public class WebSocketEventListener {
         List<String> docSessionParticipants = docSessions.get(docId);
         if(docSessionParticipants==null) return;
         docSessionParticipants.remove(sessionId);
-        if(docSessionParticipants.size()==0){
+        if(docSessionParticipants.size() == 0){
             docSessions.remove(docId);
+            crdtManagerService.saveAndDeleteCrdt(Long.parseLong(docId));
         }
         notifyActiveUsers(docId);
     }
@@ -72,6 +81,9 @@ public class WebSocketEventListener {
 
     private void notifyActiveUsers(String docId){
         List<String> docSessionParticipants = docSessions.get(docId);
+        if(docSessionParticipants==null){
+            return;
+        }
         ActiveUsers activeUsers = new ActiveUsers();
         List<String> usernames = docSessionParticipants.stream().map((sessionKey)->
         {

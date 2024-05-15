@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.cce.backend.dto.CursorDTO;
 import org.cce.backend.dto.DocumentChangeDTO;
 import org.cce.backend.engine.Crdt;
+import org.cce.backend.engine.CrdtManagerService;
 import org.cce.backend.engine.Item;
 import org.cce.backend.mapper.DocumentChangeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Controller;
 @RequiredArgsConstructor
 public class DocWebSocketController {
     @Autowired
-    Crdt crdt;
+    CrdtManagerService crdtManagerService;
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
@@ -27,7 +28,7 @@ public class DocWebSocketController {
     public void greeting(@DestinationVariable String id, DocumentChangeDTO message) {
         System.out.println(id);
         System.out.println(message);
-
+        Crdt crdt = crdtManagerService.getCrdt(Long.parseLong(id));
         if (message.getOperation().equals("delete")) {
             crdt.delete(message.getId());
         } else if (message.getOperation().equals("insert")) {
@@ -35,12 +36,7 @@ public class DocWebSocketController {
         } else {
             crdt.format(message.getId(), message.getIsBold(), message.getIsItalic());
         }
-//        System.out.println(crdt.toString());
-//        System.out.println("hnaaaa");
-//        System.out.println(crdt.getItems());
-//        System.out.println("lmaza");
-//        System.out.println(documentChangeMapper.toDto(crdt.getItems()));
-//        System.out.println("Clear Data" + crdt.getClearData());
+
         messagingTemplate.convertAndSend("/docs/broadcast/changes/" + id, message);
     }
 

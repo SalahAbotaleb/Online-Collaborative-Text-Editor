@@ -28,7 +28,7 @@ public class Doc {
 
     private String title;
     @Lob
-    @Column(name = "content", columnDefinition = "BLOB")
+    @Column(name = "content")
     private byte[] content;
 
     @OneToMany(mappedBy = "doc")
