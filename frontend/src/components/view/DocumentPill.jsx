@@ -12,14 +12,14 @@ import {useNavigate} from "react-router-dom";
 import SharedWith from "./SharedWith.jsx";
 import {MenuItem} from "@mui/material";
 
-export default function DocumentPill({file, files, setFiles, isEditor, isOwner, setIsEditor, setIsOwner}) {
+export default function DocumentPill({file, files, setFiles}) {
     const [rename, setRename] = useState(false);
     const [deleteDoc, setDeleteDoc] = useState(false);
     const [share, setShare] = useState(false);
     const [sharedWith, setSharedWith] = useState(false);
     const username = localStorage.getItem('username');
-    // const [isOwner] = useState(file.owner === username);
-    // const [isEditor] = useState(file.sharedWith.some(shared => shared.username === username && shared.permission === 'EDIT'));
+    const [isOwner] = useState(file.owner === username);
+    const [isEditor] = useState(file.sharedWith.some(shared => shared.username === username && shared.permission === 'EDIT'));
 
     const navigate = useNavigate();
 

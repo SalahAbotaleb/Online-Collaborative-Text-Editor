@@ -27,12 +27,12 @@ function App() {
         <ScrollToTop/>
         <Routes>
             <Route path="/" element={<Sign setUsername={setUsername} username={username}/>}/>
-            <Route path="/view" element={<View isOwner={isOwner} isEditor={isEditor} setIsOwner={setIsOwner} setIsEditor={setIsEditor}/>}/>
+            <Route path="/view" element={<View />}/>
             <Route path={'/edit/:docId'} element=
                 {<StompSessionProvider url={'ws://localhost:3000/docs/ws'}
                                        connectHeaders={{"Authentication": `Bearer ${jwtKey}`}}
                                        debug={test => console.log(test)}>
-                    <Edit username={username} isOwner={isOwner} isEditor={isEditor}/>
+                    <Edit username={username}/>
                 </StompSessionProvider>}/>
         </Routes>
     </BrowserRouter>)

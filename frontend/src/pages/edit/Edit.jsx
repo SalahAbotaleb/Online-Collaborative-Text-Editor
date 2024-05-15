@@ -24,15 +24,15 @@ class item {
     }
 }
 
-const ids = [];
+// const ids = [];
 
 // const item1 = new item("1@h", null, "1@m", th.ops[0]);
 // const item2 = new item("1@m", "1@h", null, th.ops[1]);
 
-const CRDT = {}
+// const CRDT = {}
 // [1@m, 1@h, 2@m, 3@m]
 
-export default function Edit({isOwner, isEditor}) {
+export default function Edit() {
     const quillRef = useRef(null);
     const [value, setValue] = useState(quillRef.current?.getEditor().getContents());
     const [range, setRange] = useState();
@@ -45,25 +45,85 @@ export default function Edit({isOwner, isEditor}) {
     const [firstItem, setFirstItem] = useState(null);
     const [cursor, setCursor] = useState(null);
     const [username] = useState(localStorage.getItem('username'));
+    const [ids, setIds] = useState([]);
+    const [CRDT, setCRDT] = useState({});
+
+    const [isOwner, setIsOwner] = useState(false);
+    const [isEditor, setIsEditor] = useState(false);
 
     const stompClient = useStompClient();
 
     useEffect(() => {
-        console.log(quillRef.current);
-        if (quillRef.current) {
-            setCursor(quillRef.current.getEditor().getModule('cursors'));
-        }
-
-        // fetch(`http://localhost:3000/api/docs/${window.location.href.split('/').pop()}`, {
-        //     method: 'GET', headers: {
-        //         'Content-Type': 'application/json'
-        //     }, credentials: 'include',
-        // }).then(res => res.json()).then(data => {
-        //     console.log(data);
-        // }).catch(err => {
-        //     console.log(err);
-        // });
+        fetch(`http://localhost:3000/api/docs/${docId}`, {
+            method: 'GET', headers: {
+                'Content-Type': 'application/json'
+            }, credentials: 'include',
+        }).then(res => res.json()).then(data => {
+            setIsOwner(data.owner === username);
+            setIsEditor(data.sharedWith.some(user => user.username === username && user.permission === 'EDIT'));
+            setLoading(false);
+        }).catch(err => {
+            console.log(err);
+        });
     }, []);
+
+    useEffect(() => {
+        if (!quillRef.current) return;
+            setCursor(quillRef.current.getEditor().getModule('cursors'));
+
+        fetch(`http://localhost:3000/api/docs/changes/${docId}`, {
+            method: 'GET', headers: {
+                'Content-Type': 'application/json'
+            }, credentials: 'include',
+        }).then(res => res.json()).then(data => {
+            console.log(data);
+            setLoading(false);
+            const tempids = [];
+            let maxcounter = 0;
+            data.forEach((itm) => {
+                if (itm.id.split('@')[1] === username) {
+                    maxcounter = Math.max(maxcounter, parseInt(itm.id.split('@')[0]));
+                }
+
+                const id = itm.id;
+                console.log(itm);
+                // CRDT[id] = new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic);
+                setCRDT(oldstate => ({...oldstate, [id]: new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic)}));
+                if (itm.left === null) {
+                    setFirstItem(id);
+                }
+                console.log(ids);
+                if (itm.isdeleted) return;
+                tempids.push(id);
+                // setIds([...ids, id])
+                // console.log(id);
+                const quillidx = tempids.indexOf(itm.id);
+                let attributes = {};
+                attributes.bold = itm.isbold;
+                attributes.italic = itm.isitalic;
+                quillRef.current.getEditor().updateContents(new Delta().retain(quillidx).insert(itm.content, attributes), "silent");
+
+            });
+            setIds(tempids);
+            setCounter(maxcounter + 1);
+        }).catch(err => {
+            console.log(err);
+        });
+    }, [loading]);
+
+    // useEffect(() => {
+    //     if (!quillRef.current) return;
+    //     setCursor(quillRef.current.getEditor().getModule('cursors'));
+    //
+    //     ids.forEach((id) => {
+    //         const index = ids.indexOf(id);
+    //         console.log(CRDT[id]);
+    //         let attributes = {};
+    //         attributes.bold = CRDT[id].isbold;
+    //         attributes.italic = CRDT[id].isitalic;
+    //         quillRef.current.getEditor().updateContents(new Delta().retain(index + 1).insert(CRDT[id].content, attributes), "silent");
+    //     });
+    // }, [quillRef.current]);
 
     useSubscription(`/docs/broadcast/usernames/${docId}`, (msg) => {
         if (loading) return;
@@ -90,6 +150,9 @@ export default function Edit({isOwner, isEditor}) {
         let incomingItem = JSON.parse(msg.body);
         if (incomingItem === null) return;
 
+        console.log(CRDT);
+        console.log(ids);
+
         console.log(incomingItem);
         if (incomingItem.operation === 'format') {
             CRDT[incomingItem.id].isbold = incomingItem.isbold;
@@ -104,7 +167,8 @@ export default function Edit({isOwner, isEditor}) {
         if (incomingItem.operation === 'delete') {
             if (CRDT[incomingItem.id].isdeleted) return;
             const index = ids.indexOf(incomingItem.id);
-            ids.splice(index, 1);
+            // ids.splice(index, 1);
+            setIds(ids.filter(id => id !== incomingItem.id));
             CRDT[incomingItem.id].isdeleted = true;
             quillRef.current.getEditor().updateContents(new Delta().retain(index).delete(1), "silent");
             console.log(CRDT);
@@ -129,7 +193,8 @@ export default function Edit({isOwner, isEditor}) {
 
                 const quillidx = ids.indexOf(incoming.left);
                 quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content), "silent");
-                ids.splice(quillidx + 1, 0, incoming.id);
+                // ids.splice(quillidx + 1, 0, incoming.id);
+                setIds([incoming.id, ...ids]);
                 console.log('here');
                 return;
             }
@@ -138,7 +203,8 @@ export default function Edit({isOwner, isEditor}) {
             incoming.left = CRDT[incoming.left].right;
         }
         incoming.right = CRDT[incoming.left].right;
-        CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
+        // CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
+        setCRDT(oldstate => ({...oldstate, [incoming.id]: new item(incoming.id, incoming.left, incoming.right, incoming.content)}));
         CRDT[incoming.left].right = incoming.id;
         if (incoming.right !== null) CRDT[incoming.right].left = incoming.id;
 
@@ -151,7 +217,9 @@ export default function Edit({isOwner, isEditor}) {
         attributes.italic = incoming.isitalic;
         console.log(attributes);
         quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content, attributes), "silent");
-        ids.splice(quillidx + 1, 0, incoming.id);
+        // ids.splice(quillidx + 1, 0, incoming.id);
+        setIds(oldstate => [...oldstate.slice(0, quillidx + 1), incoming.id, ...oldstate.slice(quillidx + 1)]);
+
     });
 
     return (<>
@@ -178,7 +246,8 @@ export default function Edit({isOwner, isEditor}) {
                             if ('insert' in delta.ops[delta.ops.length - 1]) {
                                 const index = delta.ops[0].retain;
                                 const id = counter + "@" + username;
-                                ids.splice(index, 0, id);
+                                // ids.splice(index, 0, id);
+                                setIds([...ids.slice(0, index), id, ...ids.slice(index)]);
                                 setCounter(counter + 1);
                                 let itm = new item(id, null, null, delta.ops[delta.ops.length - 1].insert);
                                 if (!index) {
@@ -201,7 +270,8 @@ export default function Edit({isOwner, isEditor}) {
                                     if ('bold' in attribute) itm.isbold = true;
                                     if ('italic' in attribute) itm.isitalic = true;
                                 }
-                                CRDT[id] = itm;
+                                // CRDT[id] = itm;
+                                setCRDT(oldstate => ({...oldstate, [id]: itm}));
                                 console.log(CRDT);
                                 stompClient.publish({
                                     destination: `/docs/change/${docId}`,
@@ -210,7 +280,8 @@ export default function Edit({isOwner, isEditor}) {
                             } else if ('delete' in delta.ops[delta.ops.length - 1]) {
                                 const index = delta.ops[0].retain ? delta.ops[0].retain : 0;
                                 const id = ids[index];
-                                ids.splice(index, 1);
+                                // ids.splice(index, 1);
+                                setIds(ids.filter(id => id !== ids[index]));
                                 CRDT[id].isdeleted = true;
                                 console.log({operation: "delete", id: id});
                                 stompClient.publish({
