@@ -34,4 +34,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     }
 
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.taskExecutor().corePoolSize(1);
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.taskExecutor().corePoolSize(1);
+    }
+
 }
