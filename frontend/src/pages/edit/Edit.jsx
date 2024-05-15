@@ -42,6 +42,7 @@ export default function Edit() {
     const {state} = useLocation();
     const [counter, setCounter] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [loadingContent, setLoadingContent] = useState(true);
     const [firstItem, setFirstItem] = useState(null);
     const [cursor, setCursor] = useState(null);
     const [username] = useState(localStorage.getItem('username'));
@@ -106,6 +107,7 @@ export default function Edit() {
             });
             setIds(tempids);
             setCounter(maxcounter + 1);
+            setLoadingContent(false);
         }).catch(err => {
             console.log(err);
         });
@@ -237,7 +239,7 @@ export default function Edit() {
                     </div>
                     <ReactQuill
                         ref={quillRef}
-                        readOnly={!isEditor && !isOwner}
+                        readOnly={(!isEditor && !isOwner) || loadingContent}
                         onChange={(value, delta, source, editor) => {
                             setValue(editor.getContents());
                             setLastChange(delta.ops);
