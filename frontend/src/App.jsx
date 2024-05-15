@@ -11,22 +11,20 @@ function App() {
 
     const [username, setUsername] = useState('');
     const [jwtKey, setJwtKey] = useState('');
-    const [isOwner, setIsOwner] = useState('');
-    const [isEditor, setIsEditor] = useState('');
 
 
-    useEffect(() => {
-        let jwt = document.cookie.split(';').find(cookie => cookie.includes('jwt'));
-        console.log(jwt);
-        if (jwt) {
-            setJwtKey(jwt.split('=')[1]);
-        }
-    }, [username]);
+    // useEffect(() => {
+    //     let jwt = document.cookie.split(';').find(cookie => cookie.includes('jwt'));
+    //     console.log(document.cookie.split(';'));
+    //     if (jwt) {
+    //         setJwtKey(jwt.split('=')[1]);
+    //     }
+    // }, [username]);
 
     return (<BrowserRouter>
         <ScrollToTop/>
         <Routes>
-            <Route path="/" element={<Sign setUsername={setUsername} username={username}/>}/>
+            <Route path="/" element={<Sign setUsername={setUsername} username={username} setJwtKey={setJwtKey}/>}/>
             <Route path="/view" element={<View />}/>
             <Route path={'/edit/:docId'} element=
                 {<StompSessionProvider url={'ws://localhost:3000/docs/ws'}
