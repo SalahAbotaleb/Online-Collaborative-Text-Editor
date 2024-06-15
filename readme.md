@@ -12,7 +12,7 @@
 9. [References](#references)
 
 ## Introduction
-We have designed and implemented an online real-time collaborative text editor. This type of software enables multiple users on different machines to edit the same document simultaneously, akin to popular tools like Google Docs.
+We have designed and implemented an online real-time collaborative text editor. This type of software enables multiple users on different machines to edit the same document simultaneously, similar to popular tools like Google Docs.
 
 ## Features
 
