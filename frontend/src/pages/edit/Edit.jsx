@@ -1,10 +1,10 @@
 import NavBar from "../../components/NavBar/NavBar";
-import ReactQuill, { Quill } from 'react-quill';
+import ReactQuill, {Quill} from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { useState, useRef, useEffect } from 'react';
+import {useState, useRef, useEffect} from 'react';
 import './editor.css'
-import { useParams, useLocation } from "react-router-dom";
-import { useSubscription, useStompClient } from "react-stomp-hooks";
+import {useParams, useLocation} from "react-router-dom";
+import {useSubscription, useStompClient} from "react-stomp-hooks";
 import InputField from "../../utils/InputField.jsx";
 import Delta from 'quill-delta';
 import QuillCursors from "quill-cursors";
@@ -38,8 +38,8 @@ export default function Edit() {
     const [range, setRange] = useState();
     const [lastChange, setLastChange] = useState();
     const [test, setTest] = useState();
-    const { docId } = useParams();
-    const { state } = useLocation();
+    const {docId} = useParams();
+    const {state} = useLocation();
     const [counter, setCounter] = useState(0);
     const [loading, setLoading] = useState(true);
     const [loadingContent, setLoadingContent] = useState(true);
@@ -56,11 +56,10 @@ export default function Edit() {
     const stompClient = useStompClient();
 
     useEffect(() => {
-        fetch(`http://localhost:3000/api/docs/${docId}`, {
+        fetch(`https://docscrdt.azurewebsites.net/api/docs/${docId}`, {
             method: 'GET', headers: {
-                'Content-Type': 'application/json',
-                "Authorization": `Bearer ${localStorage.getItem('jwtKey')}`
-            }, credentials: 'include',
+                "Authorization": localStorage.getItem('jwtKey')
+            },
         }).then(res => res.json()).then(data => {
             setIsOwner(data.owner === username);
             setIsEditor(data.sharedWith.some(user => user.username === username && user.permission === 'EDIT'));
@@ -72,13 +71,12 @@ export default function Edit() {
 
     useEffect(() => {
         if (!quillRef.current) return;
-        setCursor(quillRef.current.getEditor().getModule('cursors'));
+            setCursor(quillRef.current.getEditor().getModule('cursors'));
 
-        fetch(`http://localhost:3000/api/docs/changes/${docId}`, {
+        fetch(`https://docscrdt.azurewebsites.net/api/docs/changes/${docId}`, {
             method: 'GET', headers: {
-                'Content-Type': 'application/json',
-                "Authorization": `Bearer ${localStorage.getItem('jwtKey')}`
-            }, credentials: 'include',
+                "Authorization": localStorage.getItem('jwtKey')
+            },
         }).then(res => res.json()).then(data => {
             // console.log(data);
             setLoading(false);
@@ -91,8 +89,8 @@ export default function Edit() {
 
                 const id = itm.id;
                 // console.log(itm);
-                // CRDT[id] = new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic);
-                setCRDT(oldstate => ({ ...oldstate, [id]: new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic) }));
+                CRDT[id] = new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic);
+                // setCRDT(oldstate => ({...oldstate, [id]: new item(id, itm.left, itm.right, itm.content, itm.isdeleted, itm.isbold, itm.isitalic)}));
                 if (itm.left === null) {
                     setFirstItem(id);
                 }
@@ -152,7 +150,7 @@ export default function Edit() {
         let incomingCursor = JSON.parse(msg.body);
         if (incomingCursor === null || incomingCursor.username === username) return;
         console.log(incomingCursor);
-        cursor.moveCursor(incomingCursor.username, { index: incomingCursor.index, length: incomingCursor.length });
+        cursor.moveCursor(incomingCursor.username, {index: incomingCursor.index, length: incomingCursor.length});
     });
 
     useSubscription(`/docs/broadcast/changes/${docId}`, (msg) => {
@@ -177,8 +175,8 @@ export default function Edit() {
         if (incomingItem.operation === 'delete') {
             if (CRDT[incomingItem.id].isdeleted) return;
             const index = ids.indexOf(incomingItem.id);
-            // ids.splice(index, 1);
-            setIds(ids.filter(id => id !== incomingItem.id));
+            ids.splice(index, 1);
+            // setIds(ids.filter(id => id !== incomingItem.id));
             CRDT[incomingItem.id].isdeleted = true;
             quillRef.current.getEditor().updateContents(new Delta().retain(index).delete(1), "silent");
             // console.log(CRDT);
@@ -203,18 +201,20 @@ export default function Edit() {
 
                 const quillidx = ids.indexOf(incoming.left);
                 quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content), "silent");
-                // ids.splice(quillidx + 1, 0, incoming.id);
-                setIds([incoming.id, ...ids]);
+                ids.splice(quillidx + 1, 0, incoming.id);
+                // setIds([incoming.id, ...ids]);
                 // console.log('here');
                 return;
             }
         }
+        console.log(incoming);
+        console.log(CRDT);
         while (CRDT[incoming.left].right !== incoming.right && CRDT[incoming.left].right.split('@')[1] > incoming.id.split('@')[1]) {
             incoming.left = CRDT[incoming.left].right;
         }
         incoming.right = CRDT[incoming.left].right;
-        // CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
-        setCRDT(oldstate => ({ ...oldstate, [incoming.id]: new item(incoming.id, incoming.left, incoming.right, incoming.content) }));
+        CRDT[incoming.id] = new item(incoming.id, incoming.left, incoming.right, incoming.content);
+        // setCRDT(oldstate => ({...oldstate, [incoming.id]: new item(incoming.id, incoming.left, incoming.right, incoming.content)}));
         CRDT[incoming.left].right = incoming.id;
         if (incoming.right !== null) CRDT[incoming.right].left = incoming.id;
 
@@ -227,23 +227,23 @@ export default function Edit() {
         attributes.italic = incoming.isitalic;
         // console.log(attributes);
         quillRef.current.getEditor().updateContents(new Delta().retain(quillidx + 1).insert(incoming.content, attributes), "silent");
-        // ids.splice(quillidx + 1, 0, incoming.id);
-        setIds(oldstate => [...oldstate.slice(0, quillidx + 1), incoming.id, ...oldstate.slice(quillidx + 1)]);
+        ids.splice(quillidx + 1, 0, incoming.id);
+        // setIds(oldstate => [...oldstate.slice(0, quillidx + 1), incoming.id, ...oldstate.slice(quillidx + 1)]);
 
     });
 
     return (<>
         {loading && <div className="h-screen w-screen bg-[#f1f3f4] flex justify-center items-center">
-            <img src={loadingGif} className="m-auto" />
+            <img src={loadingGif} className="m-auto"/>
         </div>}
         {!loading && <>
-            <NavBar title={state} signedin={loading} setsignedin={setLoading} />
+            <NavBar title={state} signedin={loading} setsignedin={setLoading} usernames={currentUsers}/>
 
             <div className="bg-[#f1f3f4] flex justify-center p-4 min-h-screen">
                 <div className="w-10/12 lg:w-8/12 text-black bg-white">
                     <div id="toolbar" className='flex justify-center '>
-                        <button className="ql-bold" />
-                        <button className="ql-italic" />
+                        <button className="ql-bold"/>
+                        <button className="ql-italic"/>
                     </div>
                     <ReactQuill
                         ref={quillRef}
@@ -256,8 +256,8 @@ export default function Edit() {
                             if ('insert' in delta.ops[delta.ops.length - 1]) {
                                 const index = delta.ops[0].retain;
                                 const id = counter + "@" + username;
-                                // ids.splice(index, 0, id);
-                                setIds([...ids.slice(0, index), id, ...ids.slice(index)]);
+                                ids.splice(index, 0, id);
+                                // setIds([...ids.slice(0, index), id, ...ids.slice(index)]);
                                 setCounter(counter + 1);
                                 let itm = new item(id, null, null, delta.ops[delta.ops.length - 1].insert);
                                 if (!index) {
@@ -269,6 +269,9 @@ export default function Edit() {
                                     setFirstItem(id);
                                 } else {
                                     itm.left = ids[index - 1];
+                                    console.log(ids[index - 1]);
+                                    console.log(CRDT[ids[index - 1]]);
+                                    console.log(CRDT);
                                     if (CRDT[ids[index - 1]].right !== null) {
                                         itm.right = CRDT[ids[index - 1]].right;
                                         CRDT[CRDT[ids[index - 1]].right].left = id;
@@ -280,23 +283,23 @@ export default function Edit() {
                                     if ('bold' in attribute) itm.isbold = true;
                                     if ('italic' in attribute) itm.isitalic = true;
                                 }
-                                // CRDT[id] = itm;
-                                setCRDT(oldstate => ({ ...oldstate, [id]: itm }));
+                                CRDT[id] = itm;
+                                // setCRDT(oldstate => ({...oldstate, [id]: itm}));
                                 // console.log(CRDT);
                                 stompClient.publish({
                                     destination: `/docs/change/${docId}`,
-                                    body: JSON.stringify({ ...itm, operation: "insert" })
+                                    body: JSON.stringify({...itm, operation: "insert"})
                                 });
                             } else if ('delete' in delta.ops[delta.ops.length - 1]) {
                                 const index = delta.ops[0].retain ? delta.ops[0].retain : 0;
                                 const id = ids[index];
-                                // ids.splice(index, 1);
-                                setIds(ids.filter(id => id !== ids[index]));
+                                ids.splice(index, 1);
+                                // setIds(ids.filter(id => id !== ids[index]));
                                 CRDT[id].isdeleted = true;
                                 // console.log({operation: "delete", id: id});
                                 stompClient.publish({
                                     destination: `/docs/change/${docId}`,
-                                    body: JSON.stringify({ operation: "delete", id: id })
+                                    body: JSON.stringify({operation: "delete", id: id})
                                 });
                                 // console.log(CRDT);
                             } else if ('retain' in delta.ops[delta.ops.length - 1]) {
@@ -311,7 +314,7 @@ export default function Edit() {
 
                                             stompClient.publish({
                                                 destination: `/docs/change/${docId}`,
-                                                body: JSON.stringify({ ...CRDT[id], operation: "format" })
+                                                body: JSON.stringify({...CRDT[id], operation: "format"})
                                             });
                                         }
                                     }
@@ -329,29 +332,13 @@ export default function Edit() {
                             // if (source === 'test') return;
                             stompClient.publish({
                                 destination: `/docs/cursor/${docId}`,
-                                body: JSON.stringify({ username: username, index: range.index, length: range.length })
+                                body: JSON.stringify({username: username, index: range.index, length: range.length})
                             });
                         }}
                         modules={{
-                            toolbar: ['bold', 'italic'], cursors: { selectionChangeSource: 'test' }
+                            toolbar: ['bold', 'italic'], cursors: {selectionChangeSource: 'test'}
                         }}
                     />
-                    <div>
-                        <div>Current value:</div>
-                        {value ? JSON.stringify(value.ops) : 'Empty'}
-                    </div>
-                    <div>
-                        <div>Current Range:</div>
-                        {range ? JSON.stringify(range) : 'Empty'}
-                    </div>
-                    <div>
-                        <div>Last Change:</div>
-                        {lastChange ? JSON.stringify(lastChange) : 'Empty'}
-                    </div>
-                    <div>
-                        <div>Test:</div>
-                        {test}
-                    </div>
                 </div>
             </div>
         </>}
