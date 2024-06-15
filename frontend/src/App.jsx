@@ -1,10 +1,10 @@
-import {BrowserRouter, Routes, Route, useNavigate} from "react-router-dom";
-import {StompSessionProvider} from "react-stomp-hooks";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { StompSessionProvider } from "react-stomp-hooks";
 import Sign from './pages/Sign';
 import View from './pages/View';
 import Edit from './pages/edit/Edit'
 import ScrollToTop from "./utils/ScrollToTop.jsx";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 
 
 function App() {
@@ -28,25 +28,25 @@ function App() {
 
     return (
         <BrowserRouter>
-            <ScrollToTop/>
+            <ScrollToTop />
             <Routes>
-                <Route path="/" element={<Sign setUsername={setUsername} username={username} setLoggedin={setLoggedin}/>}/>
-                <Route path="/view" element={<View/>}/>
-                <Route path={'/edit/:docId'} element={<EditWrapper username={username}/>}/>
+                <Route path="/" element={<Sign setUsername={setUsername} username={username} setLoggedin={setLoggedin} />} />
+                <Route path="/view" element={<View />} />
+                <Route path={'/edit/:docId'} element={<EditWrapper username={username} />} />
             </Routes>
         </BrowserRouter>
     )
 }
 
-function EditWrapper({username}) {
+function EditWrapper({ username }) {
     const navigate = useNavigate();
 
     return (
         <StompSessionProvider url={'wss://docscrdt.azurewebsites.net/docs/ws'}
-                              connectHeaders={{"Authentication": localStorage.getItem('jwtKey')}}
-                              onDisconnect={() => navigate('/view')}
-                              debug={test => console.log(test)}>
-            <Edit username={username}/>
+            connectHeaders={{ "Authentication": localStorage.getItem('jwtKey') }}
+            onDisconnect={() => navigate('/view')}
+            debug={test => console.log(test)}>
+            <Edit username={username} />
         </StompSessionProvider>
     );
 }
