@@ -1,19 +1,17 @@
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 
-export default function Delete({ open, setOpen, file, files, setFiles }) {
+export default function Delete({open, setOpen,file , files, setFiles}) {
 
     function closeModal() {
         setOpen(false)
     }
     function deleteFile() {
-        fetch(`http://localhost:3000/api/docs/delete/${file.id}`, {
+        fetch(`https://docscrdt.azurewebsites.net/api/docs/delete/${file.id}`, {
             method: 'DELETE',
-            credentials: 'include',
             headers: {
-                'Content-Type': 'application/json',
-                "Authorization": `Bearer ${localStorage.getItem('jwtKey')}`
-            }
+                "Authorization": localStorage.getItem('jwtKey')
+            },
         }).then(res => res.text()).then(data => {
             setFiles(oldState => oldState.filter(f => f.id !== file.id))
         }).catch(err => {

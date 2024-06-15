@@ -6,7 +6,9 @@ import Edit from './pages/edit/Edit'
 import ScrollToTop from "./utils/ScrollToTop.jsx";
 import {useEffect, useState} from "react";
 
+
 function App() {
+
     const [username, setUsername] = useState('');
     const [loggedin, setLoggedin] = useState(false);
     const [jwtKey, setJwtKey] = useState('');
@@ -20,9 +22,9 @@ function App() {
     //     }
     // }, [username]);
 
-    useEffect(() => {
-        setJwtKey(localStorage.getItem('jwtKey'));
-    }, [loggedin]);
+    // useEffect(() => {
+    //     setJwtKey(localStorage.getItem('jwtKey'));
+    // }, [loggedin]);
 
     return (
         <BrowserRouter>
@@ -40,8 +42,8 @@ function EditWrapper({username}) {
     const navigate = useNavigate();
 
     return (
-        <StompSessionProvider url={'ws://localhost:3000/docs/ws'}
-                              connectHeaders={{"Authentication": `Bearer ${localStorage.getItem('jwtKey')}`}}
+        <StompSessionProvider url={'wss://docscrdt.azurewebsites.net/docs/ws'}
+                              connectHeaders={{"Authentication": localStorage.getItem('jwtKey')}}
                               onDisconnect={() => navigate('/view')}
                               debug={test => console.log(test)}>
             <Edit username={username}/>
@@ -49,4 +51,4 @@ function EditWrapper({username}) {
     );
 }
 
-export default App;
+export default App

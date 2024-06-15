@@ -1,10 +1,10 @@
-import { Dialog, Transition, Listbox } from '@headlessui/react'
-import { Fragment, useState } from 'react'
+import {Dialog, Transition, Listbox} from '@headlessui/react'
+import {Fragment, useState} from 'react'
 import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
 import InputField from "../../utils/InputField.jsx";
 
 
-export default function Share({ open, setOpen, title, docId, setFiles }) {
+export default function Share({open, setOpen, title, docId, setFiles}) {
     const [user, setUser] = useState('');
     const [permission, setPermission] = useState('View');
 
@@ -13,20 +13,19 @@ export default function Share({ open, setOpen, title, docId, setFiles }) {
     }
 
     function shareFile() {
-        fetch(`http://localhost:3000/api/docs/users/add/${docId}`, {
+        fetch(`https://docscrdt.azurewebsites.net/api/docs/users/add/${docId}`, {
             method: 'PATCH', headers: {
                 'Content-Type': 'application/json',
-                "Authorization": `Bearer ${localStorage.getItem('jwtKey')}`
-
+                "Authorization": localStorage.getItem('jwtKey')
             }, body: JSON.stringify({
                 username: user, permission: permission === 'View' ? 'VIEW' : 'EDIT'
-            }), credentials: 'include',
+            }),
         }).then(res => res.json()).then(data => {
             console.log(data);
             setUser('');
             setFiles(oldState => oldState.map(file => {
                 if (file.id === docId) {
-                    return { ...file, sharedWith: [...file.sharedWith, { username: user, permission: permission === 'View' ? 'VIEW' : 'EDIT' }] }
+                    return {...file, sharedWith: [...file.sharedWith, {username: user, permission: permission === 'View' ? 'VIEW' : 'EDIT'}]}
                 }
                 return file;
             }));
@@ -49,7 +48,7 @@ export default function Share({ open, setOpen, title, docId, setFiles }) {
                 leaveFrom="opacity-100"
                 leaveTo="opacity-0"
             >
-                <div className="fixed inset-0 bg-black/25" />
+                <div className="fixed inset-0 bg-black/25"/>
             </Transition.Child>
 
             <div className="fixed inset-0 overflow-y-auto">
@@ -71,7 +70,7 @@ export default function Share({ open, setOpen, title, docId, setFiles }) {
                             >
                                 Share &apos;{title}&apos;
                             </Dialog.Title>
-                            <InputField value={user} setValue={setUser} label='User' type='text' />
+                            <InputField value={user} setValue={setUser} label='User' type='text'/>
                             <div className="mt-4 mb-2">
                                 <p className="text-sm text-gray-500">
                                     Permission
@@ -79,9 +78,9 @@ export default function Share({ open, setOpen, title, docId, setFiles }) {
                             </div>
                             <Listbox as='div' value={permission} onChange={setPermission}>
                                 <Listbox.Button className="bg-white ring-1 pl-4 pr-3 py-2 rounded-lg shadow-md">
-                                    <span
-                                        className="text-[#5f6368] font-['Product_sans'] text-lg">{permission}</span>
-                                    <ArrowDropDownRoundedIcon sx={{ color: '#5f6368', marginLeft: 1, fontSize: 33 }} />
+                                        <span
+                                            className="text-[#5f6368] font-['Product_sans'] text-lg">{permission}</span>
+                                    <ArrowDropDownRoundedIcon sx={{color: '#5f6368', marginLeft: 1, fontSize: 33}}/>
                                 </Listbox.Button>
                                 <Transition
                                     as={Fragment}
@@ -95,10 +94,10 @@ export default function Share({ open, setOpen, title, docId, setFiles }) {
                                     <Listbox.Options
                                         className="text-[#5f6368] font-['Product_sans'] absolute z-10 mt-1 w-48 p-2 bg-white rounded-md shadow-md text-md">
                                         <Listbox.Option value="View"
-                                            className="rounded-md cursor-pointer p-2 hover:bg-gray-200">
+                                                        className="rounded-md cursor-pointer p-2 hover:bg-gray-200">
                                             View</Listbox.Option>
                                         <Listbox.Option value="Edit"
-                                            className="rounded-md cursor-pointer p-2 hover:bg-gray-200">
+                                                        className="rounded-md cursor-pointer p-2 hover:bg-gray-200">
                                             Edit
                                         </Listbox.Option>
                                     </Listbox.Options>
