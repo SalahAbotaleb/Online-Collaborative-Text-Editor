@@ -25,10 +25,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/docs");
         config.setApplicationDestinationPrefixes("/docs");
+        config.setPreservePublishOrder(true);
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.setPreserveReceiveOrder(true);
         registry.addEndpoint("/docs/ws")
                 .setAllowedOriginPatterns("*");
 
