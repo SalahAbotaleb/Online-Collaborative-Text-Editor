@@ -91,8 +91,7 @@ We have designed and implemented an online real-time collaborative text editor. 
 ![](/Images/ViewActiveUsers.PNG)
 ## Demo
 
-<video src="/Images/DemoAPT.mp4" controls="controls" style="max-width: 730px;">
-</video>
+https://github.com/SalahAbotaleb/Online-Collaborative-Text-Editor/assets/95881664/0874a228-a355-4fb2-9463-f151780375a0
 
 ## Algorithm
 The general idea of the algorithm is very similar to a doubly linked list. Each node contains:
