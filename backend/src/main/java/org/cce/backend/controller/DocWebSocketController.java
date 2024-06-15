@@ -26,13 +26,14 @@ public class DocWebSocketController {
 
     @MessageMapping("/change/{id}")
     public void greeting(@DestinationVariable String id, DocumentChangeDTO message) {
-        System.out.println(id);
-        System.out.println(message);
         Crdt crdt = crdtManagerService.getCrdt(Long.parseLong(id));
         if (message.getOperation().equals("delete")) {
             crdt.delete(message.getId());
         } else if (message.getOperation().equals("insert")) {
-            crdt.insert(message.getId(), new Item(message.getId(), message.getContent(), crdt.getItem(message.getRight()), crdt.getItem(message.getLeft()), message.getOperation(), message.getIsDeleted(), message.getIsBold(), message.getIsItalic()));
+            crdt.insert(message.getId(),
+                    new Item(message.getId(), message.getContent(), crdt.getItem(message.getRight()),
+                            crdt.getItem(message.getLeft()), message.getOperation(), message.getIsDeleted(),
+                            message.getIsBold(), message.getIsItalic()));
         } else {
             crdt.format(message.getId(), message.getIsBold(), message.getIsItalic());
         }
@@ -42,8 +43,6 @@ public class DocWebSocketController {
 
     @MessageMapping("/cursor/{id}")
     public void cursor(@DestinationVariable String id, CursorDTO message) {
-        System.out.println(id);
-        System.out.println(message);
         messagingTemplate.convertAndSend("/docs/broadcast/cursors/" + id, message);
     }
 

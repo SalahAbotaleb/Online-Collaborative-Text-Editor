@@ -14,28 +14,29 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/api/docs")
 public class DocController {
     @Autowired
     DocService docService;
+
     @PostMapping("/create")
     public DocumentDTO createDoc(@RequestBody DocTitleDTO title) {
         return docService.createDoc(title);
     }
+
     @DeleteMapping("/delete/{id}")
     public Long deleteDoc(@PathVariable Long id) {
         return docService.deleteDoc(id);
     }
 
     @PatchMapping("/rename/{id}")
-    public String updateDocTitle(@PathVariable Long id,@RequestBody DocTitleDTO docTitleDTO) {
+    public String updateDocTitle(@PathVariable Long id, @RequestBody DocTitleDTO docTitleDTO) {
         return docService.updateDocTitle(id, docTitleDTO);
     }
 
     @PatchMapping("/users/add/{id}")
-    public UserDocDTO addUser(@PathVariable Long id,@RequestBody UserDocDTO userDoc) {
+    public UserDocDTO addUser(@PathVariable Long id, @RequestBody UserDocDTO userDoc) {
         return docService.addUser(id, userDoc);
     }
 
@@ -61,7 +62,6 @@ public class DocController {
 
     @GetMapping("/changes/{id}")
     public List<DocumentChangeDTO> getDocChanges(@PathVariable Long id) {
-        System.out.println(docService.getDocChanges(id));
         return docService.getDocChanges(id);
     }
 
@@ -69,6 +69,5 @@ public class DocController {
     public DocumentDTO getDoc(@PathVariable Long id) {
         return docService.getDoc(id);
     }
-
 
 }

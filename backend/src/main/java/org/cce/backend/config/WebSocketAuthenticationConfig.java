@@ -31,26 +31,22 @@ public class WebSocketAuthenticationConfig implements WebSocketMessageBrokerConf
     JwtService jwtService;
 
     @Override
-    public void configureClientInboundChannel(ChannelRegistration registration){
+    public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 final String baerer = "Baerer ";
-                StompHeaderAccessor accessor =
-                        MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                System.out.println("okkk");
+                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                 if (StompCommand.CONNECT.equals(accessor.getCommand())) {
                     String authorizationHeader = accessor.getFirstNativeHeader("Authentication");
                     String jwtToken = authorizationHeader.substring(baerer.length());
-                    System.out.println(jwtToken);
                     boolean isValid = jwtService.validateUserAndToken(jwtToken);
-                    System.out.println("is valid "+isValid);
-                    if(!isValid){
+                    if (!isValid) {
                         throw new RuntimeException("Cannot access websocket, Unauthenticated");
                     }
-                    System.out.println(accessor.getDestination());
                     String username = jwtService.extractUsername(jwtToken);
-                    UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(username,null,Collections.emptyList());
+                    UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(username, null,
+                            Collections.emptyList());
                     accessor.setUser(user);
                 }
 

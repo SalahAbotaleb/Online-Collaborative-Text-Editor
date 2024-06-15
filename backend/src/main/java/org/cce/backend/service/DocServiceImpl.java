@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @Service
 public class DocServiceImpl implements DocService {
     @Autowired
@@ -70,10 +69,8 @@ public class DocServiceImpl implements DocService {
     @Transactional
     @Override
     public DocumentDTO createDoc(DocTitleDTO docTitleDTO) {
-        System.out.println("test");
         String title = docTitleDTO.getTitle();
         User user = getCurrentUser();
-        System.out.println("aftergetuser");
         Doc doc = Doc.builder()
                 .owner(user)
                 .title(title)
@@ -102,7 +99,7 @@ public class DocServiceImpl implements DocService {
     public String updateDocTitle(Long id, DocTitleDTO title) {
         Doc doc = docRepository.findById(id).orElseThrow(() -> new RuntimeException("Document not found"));
         String username = SecurityUtil.getCurrentUsername();
-        if(!docAuthorizationService.canEdit(username, doc)) {
+        if (!docAuthorizationService.canEdit(username, doc)) {
             throw new UnauthorizedUserException("You are not authorized to update this document");
         }
         doc.setTitle(title.getTitle());
@@ -160,7 +157,8 @@ public class DocServiceImpl implements DocService {
         if (!docAuthorizationService.canEdit(username, doc)) {
             throw new UnauthorizedUserException("You are not authorized to update permissions for this document");
         }
-        int isUpdated = userDocRepository.updateUserDocBy(userDocDTO.getUsername(), id, username, userDocDTO.getPermission());
+        int isUpdated = userDocRepository.updateUserDocBy(userDocDTO.getUsername(), id, username,
+                userDocDTO.getPermission());
 
         return isUpdated != 0 ? "User updated successfully" : "Failed to update";
     }
@@ -178,10 +176,9 @@ public class DocServiceImpl implements DocService {
     @Override
     public List<DocumentChangeDTO> getDocChanges(Long id) {
         Crdt crdt = crdtManagerService.getCrdt(id);
-        if(crdt == null) {
+        if (crdt == null) {
             Doc doc = docRepository.findById(id).orElseThrow(
-                    () -> new RuntimeException("Document not found")
-            );
+                    () -> new RuntimeException("Document not found"));
             crdt = new Crdt(doc.getContent());
         }
         return documentChangeMapper.toDto(crdt.getItems());

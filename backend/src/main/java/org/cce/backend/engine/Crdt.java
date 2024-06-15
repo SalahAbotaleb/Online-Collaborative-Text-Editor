@@ -17,55 +17,50 @@ public class Crdt {
         crdtMap = new HashMap<>();
     }
 
-    public Crdt(byte[] bytes){
+    public Crdt(byte[] bytes) {
         InitCrdt(bytes);
     }
 
-    public void InitCrdt(byte[] bytes){
+    public void InitCrdt(byte[] bytes) {
         List<Item> items = (List<Item>) getDeserializedCrdt(bytes);
         crdtMap = getCrdtMap(items);
-        if(items.size()!=0) {
+        if (items.size() != 0) {
             firstItem = items.get(0);
-        }else{
+        } else {
             firstItem = null;
         }
     }
 
-    public Item getItem(String id){
-        return crdtMap.getOrDefault(id,null);
+    public Item getItem(String id) {
+        return crdtMap.getOrDefault(id, null);
     }
+
     public void insert(String key, Item item) {
         if (item.getLeft() == null) {
             String firstItemId = firstItem == null ? null : firstItem.getId();
             String RightItemId = item.getRight() == null ? null : item.getRight().getId();
-            System.out.println(firstItem);
-            System.out.println(firstItemId);
-            System.out.println(RightItemId);
-            if (!Objects.equals(firstItemId, RightItemId) && firstItem.getId().split("@")[1].compareTo(item.getId().split("@")[1]) > 0) {
-                System.out.println("here7");
+            if (!Objects.equals(firstItemId, RightItemId)
+                    && firstItem.getId().split("@")[1].compareTo(item.getId().split("@")[1]) > 0) {
                 item.setRight(firstItem);
-                System.out.println(item);
             } else {
-                System.out.println("here1");
                 item.setRight(firstItem);
-                System.out.println("here2");
-                if (firstItem != null) firstItem.setLeft(item);
-                System.out.println("here3");
+                if (firstItem != null)
+                    firstItem.setLeft(item);
                 firstItem = item;
-                System.out.println("here4");
                 crdtMap.put(item.getId(), item);
-                System.out.println("here");
                 return;
             }
         }
-        while (item.getLeft().getRight() != item.getRight() && item.getLeft().getLeft().getId().split("@")[1].compareTo(item.getId().split("@")[1]) > 0) {
+        while (item.getLeft().getRight() != item.getRight()
+                && item.getLeft().getLeft().getId().split("@")[1].compareTo(item.getId().split("@")[1]) > 0) {
             item.setLeft(item.getLeft().getRight());
         }
 
         item.setRight(item.getLeft().getRight());
         crdtMap.put(item.getId(), item);
         item.getLeft().setRight(item);
-        if (item.getRight() != null) item.getRight().setLeft(item);
+        if (item.getRight() != null)
+            item.getRight().setLeft(item);
 
     }
 
@@ -85,50 +80,50 @@ public class Crdt {
         StringBuilder sb = new StringBuilder();
         Item current = firstItem;
         while (current != null) {
-            if (!current.isIsdeleted())  sb.append(current.getContent());
+            if (!current.isIsdeleted())
+                sb.append(current.getContent());
             current = current.getRight();
         }
         return sb.toString();
     }
 
-    public List<Item> getItems(){
+    public List<Item> getItems() {
         List<Item> items = new ArrayList<>();
         Item current = firstItem;
         while (current != null) {
-                items.add(current);
+            items.add(current);
             current = current.getRight();
         }
-        System.out.println(items);
         return items;
     }
 
-    private List<Item> getClearData(){
+    private List<Item> getClearData() {
         List<Item> items = new ArrayList<>();
         int cnt = 0;
         Item current = firstItem;
         while (current != null) {
             if (!current.isIsdeleted()) {
-                Item left = cnt == 0?null:items.get(cnt-1);
+                Item left = cnt == 0 ? null : items.get(cnt - 1);
                 Item item = Item.builder()
-                        .id(cnt+"@_")
+                        .id(cnt + "@_")
                         .left(left)
                         .isbold(current.isIsbold()).isdeleted(current.isIsdeleted())
-                                .isitalic(current.isIsitalic()).content(current.getContent())
-                                .operation(current.getOperation()).right(null).build();
-                if(cnt!=0) items.get(cnt-1).setRight(item);
+                        .isitalic(current.isIsitalic()).content(current.getContent())
+                        .operation(current.getOperation()).right(null).build();
+                if (cnt != 0)
+                    items.get(cnt - 1).setRight(item);
                 items.add(item);
                 cnt++;
             }
             current = current.getRight();
         }
-        System.out.println(items);
         return items;
     }
 
     public byte[] getSerializedCrdt() {
         Object obj = getClearData();
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-             ObjectOutputStream out = new ObjectOutputStream(bos)) {
+                ObjectOutputStream out = new ObjectOutputStream(bos)) {
             out.writeObject(obj);
             return bos.toByteArray();
         } catch (IOException e) {
@@ -136,24 +131,23 @@ public class Crdt {
         }
     }
 
-    private HashMap<String,Item>getCrdtMap(List<Item> items){
-        HashMap<String,Item> crdtMap = new HashMap<>();
-        for(Item item:items){
-            crdtMap.put(item.getId(),item);
+    private HashMap<String, Item> getCrdtMap(List<Item> items) {
+        HashMap<String, Item> crdtMap = new HashMap<>();
+        for (Item item : items) {
+            crdtMap.put(item.getId(), item);
         }
         return crdtMap;
     }
+
     private Object getDeserializedCrdt(byte[] bytes) {
-        if(bytes.length==0){
+        if (bytes.length == 0) {
             return new ArrayList<>();
         }
         try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-             ObjectInputStream in = new ObjectInputStream(bis)) {
+                ObjectInputStream in = new ObjectInputStream(bis)) {
             return in.readObject();
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("Failed to deserialize object", e);
         }
     }
 }
-
-
