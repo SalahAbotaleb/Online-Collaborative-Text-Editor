@@ -1,5 +1,5 @@
 1- clone repository using 
-git clone https://SalahAbotaleb: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@github.com/SalahAbotaleb/Online-Collaborative-Text-Editor.git
+git clone https://github.com/SalahAbotaleb/Online-Collaborative-Text-Editor.git
 2- redirect to the backend folder
 3- build gradle.build file
 4- then run the spring boot app on local host
