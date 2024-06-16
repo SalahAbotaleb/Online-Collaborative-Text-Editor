@@ -113,6 +113,7 @@ We use the username as a tiebreaker. Lexicographically higher numbers mean highe
 - For showing an item, we search for the first item to its left that was not deleted.
 - For italic and bold, in normal insertion items are set as bold and italic.
 - For selecting multiple elements then bolding or italicizing, the loop goes through all the IDs and sets the `isBold` or `isItalic` or both.
+- Conflicts are resolved using CRDT data structure.
 
 ## Contributors
 * [Omar Elzahar](https://github.com/omarelzahar02)
